@@ -16,6 +16,7 @@ const pagoSchema = new mongoose.Schema({
   },
   nombre: String,
   email: String,
+  metodo: String,
   fecha: {
     type: Date,
     default: Date.now,

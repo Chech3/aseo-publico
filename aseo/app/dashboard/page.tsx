@@ -15,10 +15,18 @@ import { PaymentModal } from "@/components/payment-modal";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { ComplaintModal } from "@/components/complaint-modal";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [complaintType, setComplaintType] = useState<any>("");
 
+  const handleComplaintClick = (type: "general" | "service") => {
+    setComplaintType(type);
+    setIsComplaintModalOpen(true);
+  };
   return (
     <ProtectedRoute>
       <DashboardShell>
@@ -135,23 +143,36 @@ export default function DashboardPage() {
           {/* Sección de ayuda */}
           <Card>
             <CardHeader>
-              <CardTitle>¿Necesitas ayuda?</CardTitle>
+              <CardTitle>¿Tienes algún problema con el servicio?</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleComplaintClick("general")}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
                   <Info className="h-4 w-4" />
-                  <span>Preguntas frecuentes</span>
+                  <span>¿Alguna queja?</span>
                 </Button>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleComplaintClick("service")}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
                   <History className="h-4 w-4" />
-                  <span> ¿No estas satisfecho con el servicio?</span>
+                  <span> ¿No estás satisfecho con el servicio?</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
       </DashboardShell>
+      <ComplaintModal
+        isOpen={isComplaintModalOpen}
+        onClose={() => setIsComplaintModalOpen(false)}
+        complaintType={complaintType}
+      />
     </ProtectedRoute>
   );
 }

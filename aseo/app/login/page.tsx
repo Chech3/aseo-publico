@@ -73,6 +73,7 @@ export default function LoginPage() {
         cedula: data.user.cedula,
         telefono: data.user.telefono,
         direccion: data.user.direccion,
+        rol: data.user.rol
       });
 
 

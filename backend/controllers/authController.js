@@ -48,7 +48,7 @@ exports.login = async (req, res) => {
       expiresIn: '1h',
     });
 
-    res.status(200).json({ token, user: { nombre: user.nombre, cedula: user.cedula, direccion: user.direccion, telefono: user.telefono, correo: user.correo } });
+    res.status(200).json({ token, user: { nombre: user.nombre, cedula: user.cedula, direccion: user.direccion, telefono: user.telefono, correo: user.correo, rol: user.rol } });
   } catch (error) {
     res.status(500).json({ error: 'Error del servidor' });
   }

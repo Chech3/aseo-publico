@@ -19,20 +19,12 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Upload, ImageIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-interface PendingBill {
-  id: string;
-  billNumber: string;
-  description: string;
-  amount: number;
-  dueDate: string;
-  status: "pending" | "overdue" | "due-soon";
-  category: string;
-}
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  bill: PendingBill | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  bill: any | null;
 }
 
 export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
@@ -106,11 +98,11 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
 
     // Validar que todos los campos requeridos estén llenos
     const referencia = formData.get("referencia") as string;
-
+    const metodo = formData.get("metodo") as string;
     if (!referencia) {
       toast({
         title: "Campos requeridos",
-        description: "Por favor completa todos los campos marcados con *.",
+        description: "Por favor complete el campo referencia *.",
         variant: "destructive",
       });
       setIsProcessing(false);
@@ -131,18 +123,15 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
       const formPayload = new FormData();
       formPayload.append("referencia", referencia);
       formPayload.append("comprobante", uploadedFile); // archivo real
+      formPayload.append("metodo", metodo || "");
       formPayload.append("cedula", user?.cedula || "");
       formPayload.append("nombre", user?.nombre || "");
       formPayload.append("correo", user?.correo || "");
 
-      const res = await fetch("http://localhost:3001/api/pagos/registrar", {
+      await fetch("http://localhost:3001/api/pagos/registrar", {
         method: "POST",
         body: formPayload,
-        // NO pongas el header Content-Type manualmente
       });
-
-      const data = await res.json();
-      console.log(data);
 
       toast({
         title: "Pago registrado exitosamente",
@@ -264,6 +253,16 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
                   required
                   className="h-12"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="metodo">
+                  Método de Pago
+                </Label>
+                <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" name="metodo" id="metodo">
+                  <option value="transferencia">Transferencia Bancaria</option>
+                  <option value="Pago movil">Pago Movil</option>
+                </select>
               </div>
             </div>
           </div>

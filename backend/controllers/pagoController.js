@@ -1,7 +1,7 @@
 const Pago = require('../models/Pago');
 exports.registrarPago = async (req, res) => {
   try {
-    const { referencia, cedula, nombre, correo } = req.body;
+    const { referencia, cedula, nombre, correo, metodo } = req.body;
 
     // Asegúrate de que `req.file` exista (esto viene de multer)
     if (!req.file) {
@@ -16,6 +16,7 @@ exports.registrarPago = async (req, res) => {
       cedula,
       nombre,
       correo,
+      metodo,
       comprobante: rutaComprobante,
       fecha: new Date(),
     });

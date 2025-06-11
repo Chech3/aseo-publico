@@ -14,6 +14,7 @@ interface User {
   correo: string;
   telefono: string;
   direccion: string;
+  rol: string;
 }
 
 interface AuthContextType {
