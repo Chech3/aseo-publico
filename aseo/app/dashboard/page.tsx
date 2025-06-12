@@ -12,7 +12,7 @@ import { DashboardShell } from "@/components/dashboard-shell";
 import { PaymentHistoryList } from "@/components/payment-history-list";
 import { CreditCard, History, Info, ArrowRight } from "lucide-react";
 import { PaymentModal } from "@/components/payment-modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ComplaintModal } from "@/components/complaint-modal";
@@ -22,11 +22,44 @@ export default function DashboardPage() {
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [complaintType, setComplaintType] = useState<any>("");
+  const [estadoCuenta, setEstadoCuenta] = useState<EstadoCuenta | null>(null);
+
+  type EstadoCuenta = {
+    deudaActual: number;
+    saldoRestante: number;
+  };
+
+  // const [loading, setLoading] = useState(true);
 
   const handleComplaintClick = (type: "general" | "service") => {
     setComplaintType(type);
     setIsComplaintModalOpen(true);
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      console.error("No hay token de autenticación");
+      return;
+    }
+
+    fetch("http://localhost:3001/api/pagos/estado-cuenta", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setEstadoCuenta(data);
+        console.log(data);
+        // setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error al obtener estado de cuenta:", err);
+        // setLoading(false);
+      });
+  }, []);
   return (
     <ProtectedRoute>
       <DashboardShell>
@@ -43,17 +76,25 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="col-span-1">
               <CardHeader className="pb-2">
-                <CardTitle>Tu saldo actual</CardTitle>
+                <CardTitle>
+                  Tu saldo actual es:{" "}
+                  <span className="text-green-600 font-bold">
+                    {Math.abs(estadoCuenta?.saldoRestante ?? 0)}$
+                  </span>
+                </CardTitle>
                 <CardDescription>Servicio de aseo - Junio 2025</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">
-                      Saldo pendiente:
+                      Deuda pendiente:
                     </span>
                     <span className="text-2xl font-bold text-red-600">
-                      $25.00
+                      {estadoCuenta?.deudaActual ?? 0 < 0
+                        ? 0
+                        : estadoCuenta?.deudaActual}
+                      $
                     </span>
                   </div>
                   <div className="flex items-center justify-between">

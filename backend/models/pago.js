@@ -2,6 +2,11 @@
 const mongoose = require('mongoose');
 
 const pagoSchema = new mongoose.Schema({
+  usuario: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Relacionamos con el usuario
+  monto: {
+    type: Number,
+    required: true,
+  },
   referencia: {
     type: String,
     required: true,

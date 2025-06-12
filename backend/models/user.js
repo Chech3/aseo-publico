@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema({
   correo: { type: String, required: true },
   password: { type: String, required: true },
   rol: { type: String, enum: ['admin', 'user'], default: 'user' },
+  saldo: {
+    type: Number,
+    default: 0, // suponiendo que parte sin deuda
+  },
+  deuda: { type: Number, default: 0 },
+
 });
 
 module.exports = mongoose.model('User', userSchema);

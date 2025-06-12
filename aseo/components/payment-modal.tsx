@@ -19,7 +19,6 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Upload, ImageIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -98,6 +97,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
 
     // Validar que todos los campos requeridos estén llenos
     const referencia = formData.get("referencia") as string;
+    const monto = formData.get("monto") as string;
     const metodo = formData.get("metodo") as string;
     if (!referencia) {
       toast({
@@ -123,6 +123,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
       const formPayload = new FormData();
       formPayload.append("referencia", referencia);
       formPayload.append("comprobante", uploadedFile); // archivo real
+      formPayload.append("monto", monto);
       formPayload.append("metodo", metodo || "");
       formPayload.append("cedula", user?.cedula || "");
       formPayload.append("nombre", user?.nombre || "");
@@ -130,6 +131,9 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
 
       await fetch("http://localhost:3001/api/pagos/registrar", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
         body: formPayload,
       });
 
@@ -141,7 +145,8 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
       });
 
       onClose();
-    } catch {
+    } catch (error) {
+      console.error("Error al registrar el pago:", error);
       toast({
         title: "Error al registrar el pago",
         description:
@@ -242,6 +247,19 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="monto">
+                  Monto <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="monto"
+                  name="monto"
+                  placeholder="25"
+                  required
+                  className="h-12"    
+                  type="number"              
+                />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="referencia">
                   Referencia del Pago (4 últimos dígitos)
                 </Label>
@@ -256,10 +274,12 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="metodo">
-                  Método de Pago
-                </Label>
-                <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm" name="metodo" id="metodo">
+                <Label htmlFor="metodo">Método de Pago</Label>
+                <select
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                  name="metodo"
+                  id="metodo"
+                >
                   <option value="transferencia">Transferencia Bancaria</option>
                   <option value="Pago movil">Pago Movil</option>
                 </select>

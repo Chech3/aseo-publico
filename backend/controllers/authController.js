@@ -2,14 +2,31 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
+const validateRegister = require('../validators/registerValidator');
 exports.register = async (req, res) => {
   try {
     const { nombre, cedula, direccion, telefono, password, correo } = req.body;
 
-    const existingUser = await User.findOne({ cedula });
-    if (existingUser) {
+
+    const errors = validateRegister(req.body);
+    if (errors.length > 0) {
+      return res.status(400).json({ message: 'Errores de validación', errors });
+    }
+
+    const existingCedula = await User.findOne({ cedula });
+    if (existingCedula) {
       return res.status(400).json({ message: 'La cédula ya está registrada' });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ correo }, { telefono }]
+    });
+    if (existingUser) {
+      let conflictField = '';
+      if (existingUser.correo === correo) conflictField = 'correo';
+      else if (existingUser.telefono === telefono) conflictField = 'teléfono';
+
+      return res.status(400).json({ message: `El ${conflictField} ya está registrado en nuestro sistema` });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -20,6 +37,7 @@ exports.register = async (req, res) => {
       direccion,
       telefono,
       correo,
+      saldo: 0,
       password: hashedPassword,
     });
 

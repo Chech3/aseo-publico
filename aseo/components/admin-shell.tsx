@@ -14,7 +14,7 @@ export function AdminShell({ children }: AdminShellProps) {
         <div className="container flex h-16 items-center justify-between py-4">
           <div className="flex items-center gap-2 font-bold text-xl">
             <Sparkles className="h-6 w-6 text-green-600" />
-            <span>AseoManager</span>
+            <span>Aseo</span>
             <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">Admin</span>
           </div>
           <UserNav />

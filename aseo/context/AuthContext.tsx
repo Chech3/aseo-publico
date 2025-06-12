@@ -15,6 +15,7 @@ interface User {
   telefono: string;
   direccion: string;
   rol: string;
+  saldo: number;
 }
 
 interface AuthContextType {
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("adminToken"); // o cualquier otro token que guardes
     router.push("/login"); // Redirigir al login después de cerrar sesión
   };
 

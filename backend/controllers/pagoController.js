@@ -1,7 +1,12 @@
-const Pago = require('../models/Pago');
+const Pago = require('../models/pago');
+const User = require('../models/user');  // <-- este te faltaba
+
 exports.registrarPago = async (req, res) => {
   try {
-    const { referencia, cedula, nombre, correo, metodo } = req.body;
+    const { referencia, cedula, nombre, correo, metodo, monto } = req.body;
+
+    const usuarioId = req.user.id; // lo tomamos desde el token
+
 
     // Asegúrate de que `req.file` exista (esto viene de multer)
     if (!req.file) {
@@ -12,6 +17,8 @@ exports.registrarPago = async (req, res) => {
     const rutaComprobante = `/uploads/${req.file.filename}`;
 
     const nuevoPago = new Pago({
+      usuario: usuarioId, // Relacionamos el pago con el usuario autenticado
+      monto,
       referencia,
       cedula,
       nombre,
@@ -22,6 +29,13 @@ exports.registrarPago = async (req, res) => {
     });
 
     await nuevoPago.save();
+
+    // Actualizamos el saldo
+    const user = await User.findById(usuarioId);
+    if (user) {
+      user.deuda = (user.deuda || 0) - monto;
+      await user.save();
+    }
 
     res.status(201).json({ message: "Pago registrado", pago: nuevoPago });
   } catch (error) {

@@ -63,7 +63,6 @@ export default function LoginPage() {
 
       console.log("Respuesta del login:", data);
 
-
       if (!response.ok) {
         throw new Error(data.message || "Error al iniciar sesión.");
       }
@@ -73,9 +72,9 @@ export default function LoginPage() {
         cedula: data.user.cedula,
         telefono: data.user.telefono,
         direccion: data.user.direccion,
-        rol: data.user.rol
+        rol: data.user.rol,
+        saldo: data.user.saldo,
       });
-
 
       toast({
         title: "Inicio de sesión exitoso",
