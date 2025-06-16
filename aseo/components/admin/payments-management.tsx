@@ -1,117 +1,210 @@
-"use client"
+"use client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Eye, Download, Search, Filter } from "lucide-react";
+import { useEffect, useState } from "react";
+import { getTodosLosPagos } from "@/hooks/useTodosPagos";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { actualizarPagoAdmin } from "@/hooks/useActualizarPago";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, Download, Search, Filter } from "lucide-react"
-import { useState } from "react"
-
-interface Payment {
-  id: string
-  clientName: string
-  billNumber: string
-  amount: number
-  paymentDate: string
-  paymentMethod: string
-  transactionId: string
-  status: "completed" | "pending" | "failed"
+interface PaymentHistory {
+  id: string;
+  nombre?: string;
+  monto: number;
+  metodo: string;
+  fecha: string;
+  comprobante?: string;
+  estado: "completado" | "pendiente" | "rechazado";
 }
 
-const demoPayments: Payment[] = [
-  {
-    id: "1",
-    clientName: "María González",
-    billNumber: "ASE-2025-001",
-    amount: 150000,
-    paymentDate: "2025-06-07",
-    paymentMethod: "Tarjeta de crédito",
-    transactionId: "TXN-001234",
-    status: "completed",
-  },
-  {
-    id: "2",
-    clientName: "Carlos Rodríguez",
-    billNumber: "ASE-2025-002",
-    amount: 300000,
-    paymentDate: "2025-06-06",
-    paymentMethod: "Transferencia bancaria",
-    transactionId: "TXN-001235",
-    status: "completed",
-  },
-  {
-    id: "3",
-    clientName: "Ana Martínez",
-    billNumber: "ASE-2025-003",
-    amount: 120000,
-    paymentDate: "2025-06-05",
-    paymentMethod: "Pago móvil",
-    transactionId: "TXN-001236",
-    status: "pending",
-  },
-]
-
 export function PaymentsManagement() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [pagos, setPagos] = useState<PaymentHistory[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { toast } = useToast();
+  const { logout } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(
+    null
+  );
 
-  const getStatusColor = (status: Payment["status"]) => {
-    switch (status) {
-      case "completed":
-        return "success"
-      case "pending":
-        return "warning"
-      case "failed":
-        return "destructive"
-      default:
-        return "default"
-    }
-  }
+  const handleEdit = (payment: PaymentHistory) => {
+    setSelectedPayment(payment);
+    setShowModal(true);
+  };
 
-  const getStatusText = (status: Payment["status"]) => {
-    switch (status) {
-      case "completed":
-        return "Completado"
-      case "pending":
-        return "Pendiente"
-      case "failed":
-        return "Fallido"
+  const getStatusColor = (
+    estado: PaymentHistory["estado"]
+  ): "default" | "destructive" | "outline" | "secondary" => {
+    switch (estado) {
+      case "completado":
+        return "secondary";
+      case "pendiente":
+        return "outline";
+      case "rechazado":
+        return "destructive";
       default:
-        return status
+        return "default";
     }
-  }
+  };
+
+  const getStatusText = (estado: PaymentHistory["estado"]) => {
+    switch (estado) {
+      case "completado":
+        return "Completado";
+      case "pendiente":
+        return "Pendiente";
+      case "rechazado":
+        return "Rechazado";
+      default:
+        return estado;
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: "COP",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("es-ES", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
-  const filteredPayments = demoPayments.filter((payment) => {
-    const matchesSearch =
-      payment.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.billNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      payment.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || payment.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const filteredPayments = pagos.filter((payment) => {
+    const estado = (payment.estado ?? "").toLowerCase(); // asegurar string siempre
+    const matchesSearch = estado.includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || estado === statusFilter.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
 
   const totalAmount = filteredPayments
-    .filter((p) => p.status === "completed")
-    .reduce((sum, payment) => sum + payment.amount, 0)
+    .filter((p) => (p.estado ?? "").toLowerCase() === "completado")
+    .reduce((sum, payment) => sum + payment.monto, 0);
+
+  const getData = async () => {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "No estás autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    getTodosLosPagos(token)
+      .then((data) => {
+        type PagoApi = {
+          _id: string;
+          monto: number;
+          fecha: string;
+          comprobante?: string;
+          estado?: "completado" | "pendiente" | "rechazado";
+          metodo?: string;
+          nombre: string;
+        };
+        console.log("Pagos obtenidos:", data.pagos);
+
+        const mappedPagos: PaymentHistory[] = data.pagos.map(
+          (pago: PagoApi) => ({
+            id: pago._id,
+            monto: pago.monto,
+            nombre: pago.nombre, // Asignar nombre del cliente si está disponible
+            fecha: pago.fecha,
+            comprobante: pago.comprobante ?? "",
+            estado: pago.estado ?? "pendiente", // asigno un estado por defecto si no viene
+            metodo: pago.metodo ?? "Pago móvil", // asigno método por defecto si no viene
+          })
+        );
+        setPagos(mappedPagos);
+      })
+      .catch((error) => {
+        toast({
+          title: "Error al cargar pagos",
+          description: error.message,
+          variant: "destructive",
+        });
+        if (error.message === "Token inválido") {
+          logout();
+          toast({
+            title: "Sesión expirada",
+            description: "Por favor, inicia sesión nuevamente.",
+            variant: "destructive",
+          });
+        }
+      });
+  };
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  async function handleUpdate() {
+    if (!selectedPayment) return;
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "No estás autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await actualizarPagoAdmin(token, selectedPayment.id, {
+        monto: selectedPayment.monto,
+        metodo: selectedPayment.metodo,
+        estado: selectedPayment.estado,
+      });
+
+      toast({
+        title: "Pago actualizado",
+        description: "Se guardaron los cambios",
+      });
+
+      setShowModal(false);
+      // Aquí podrías refrescar la tabla después
+    } catch (error) {
+      toast({
+        title: "Error al actualizar",
+        description:
+          typeof error === "object" && error !== null && "message" in error
+            ? (error as { message?: string }).message
+            : "Error inesperado",
+        variant: "destructive",
+      });
+    } finally {
+      getData();
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -132,9 +225,9 @@ export function PaymentsManagement() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="completed">Completados</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="failed">Fallidos</SelectItem>
+              <SelectItem value="completado">Completados</SelectItem>
+              <SelectItem value="pendiente">Pendientes</SelectItem>
+              <SelectItem value="fallido">Fallidos</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -154,11 +247,15 @@ export function PaymentsManagement() {
         <div className="flex justify-between items-center">
           <div>
             <h3 className="font-semibold">Total recaudado (filtrado)</h3>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(totalAmount)}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalAmount)}
+            </p>
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Pagos completados</p>
-            <p className="text-lg font-semibold">{filteredPayments.filter((p) => p.status === "completed").length}</p>
+            <p className="text-lg font-semibold">
+              {filteredPayments.filter((p) => p.estado === "completado").length}
+            </p>
           </div>
         </div>
       </div>
@@ -168,10 +265,8 @@ export function PaymentsManagement() {
           <TableHeader>
             <TableRow>
               <TableHead>Cliente</TableHead>
-              <TableHead>Factura</TableHead>
               <TableHead>Fecha y hora</TableHead>
               <TableHead>Método</TableHead>
-              <TableHead>ID Transacción</TableHead>
               <TableHead>Monto</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -180,22 +275,25 @@ export function PaymentsManagement() {
           <TableBody>
             {filteredPayments.map((payment) => (
               <TableRow key={payment.id}>
-                <TableCell className="font-medium">{payment.clientName}</TableCell>
-                <TableCell>{payment.billNumber}</TableCell>
-                <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                <TableCell>{payment.paymentMethod}</TableCell>
-                <TableCell className="font-mono text-sm">{payment.transactionId}</TableCell>
-                <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
+                <TableCell>{payment.nombre}</TableCell>
+                <TableCell>{formatDate(payment.fecha)}</TableCell>
+                <TableCell>{payment.metodo}</TableCell>
+                <TableCell className="font-semibold">
+                  {formatCurrency(payment.monto)}
+                </TableCell>
                 <TableCell>
-                  <Badge variant={getStatusColor(payment.status) as any}>{getStatusText(payment.status)}</Badge>
+                  <Badge variant={getStatusColor(payment.estado)}>
+                    {getStatusText(payment.estado)}
+                  </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon">
-                      <Download className="h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleEdit(payment)}
+                    >
+                      Editar
                     </Button>
                   </div>
                 </TableCell>
@@ -203,7 +301,72 @@ export function PaymentsManagement() {
             ))}
           </TableBody>
         </Table>
+        {showModal && selectedPayment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-md w-[400px] space-y-4">
+              <h2 className="text-lg font-semibold mb-4">Editar Pago</h2>
+
+              <div className="space-y-3">
+                <div>
+                  <label>Monto:</label>
+                  <Input
+                    type="number"
+                    value={selectedPayment.monto}
+                    onChange={(e) =>
+                      setSelectedPayment({
+                        ...selectedPayment,
+                        monto: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>Método:</label>
+                  <Input
+                    value={selectedPayment.metodo}
+                    onChange={(e) =>
+                      setSelectedPayment({
+                        ...selectedPayment,
+                        metodo: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label>Estado:</label>
+                  <Select
+                    value={selectedPayment.estado}
+                    onValueChange={(value) =>
+                      setSelectedPayment({
+                        ...selectedPayment,
+                        estado: value as any,
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pendiente">Pendiente</SelectItem>
+                      <SelectItem value="completado">Completado</SelectItem>
+                      <SelectItem value="rechazado">Rechazado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setShowModal(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleUpdate}>Guardar</Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

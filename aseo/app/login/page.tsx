@@ -61,8 +61,6 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      console.log("Respuesta del login:", data);
-
       if (!response.ok) {
         throw new Error(data.message || "Error al iniciar sesión.");
       }
@@ -85,7 +83,11 @@ export default function LoginPage() {
       localStorage.setItem("adminToken", data.token);
       localStorage.setItem("adminAuthenticated", "true");
 
-      router.push("/dashboard");
+      if (data.user.rol === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Ocurrió un error inesperado.");

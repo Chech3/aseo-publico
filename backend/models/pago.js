@@ -26,6 +26,11 @@ const pagoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  estado: {
+    type: String,
+    enum: ['pendiente', 'completado', 'rechazado'],
+    default: 'pendiente',
+  },
 });
 
 module.exports = mongoose.model('Pago', pagoSchema);

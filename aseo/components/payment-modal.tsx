@@ -280,7 +280,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
                   name="metodo"
                   id="metodo"
                 >
-                  <option value="transferencia">Transferencia Bancaria</option>
+                  <option value="Transferencia">Transferencia Bancaria</option>
                   <option value="Pago movil">Pago Movil</option>
                 </select>
               </div>

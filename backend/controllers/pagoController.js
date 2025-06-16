@@ -24,6 +24,7 @@ exports.registrarPago = async (req, res) => {
       nombre,
       correo,
       metodo,
+      estado: 'pendiente', // Por defecto, el estado es pendiente
       comprobante: rutaComprobante,
       fecha: new Date(),
     });

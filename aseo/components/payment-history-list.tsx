@@ -1,94 +1,124 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Download, Eye } from "lucide-react"
+"use client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { getUltimosPagos } from "@/hooks/useUltimosPagos";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface PaymentHistory {
-  id: string
-  date: string
-  billNumber: string
-  description: string
-  amount: number
-  paymentMethod: string
-  status: "completed" | "pending" | "failed"
-  transactionId: string
+  id: string;
+  monto: number;
+  fecha: string;
+  comprobante?: string;
+  estado: "completado" | "pendiente" | "rechazado";
+  metodo: string;
 }
 
-const demoHistory: PaymentHistory[] = [
-  {
-    id: "1",
-    date: "2025-05-15",
-    billNumber: "ASE-2025-001",
-    description: "Servicio de aseo - Mayo 2025",
-    amount: 25,
-    paymentMethod: "Transferencia bancaria",
-    status: "completed",
-    transactionId: "TXN-001234",
-  },
-  {
-    id: "2",
-    date: "2025-04-12",
-    billNumber: "ASE-2025-002",
-    description: "Servicio de aseo - Abril 2025",
-    amount: 25,
-    paymentMethod: "Transferencia bancaria",
-    status: "completed",
-    transactionId: "TXN-001235",
-  },
-  {
-    id: "3",
-    date: "2025-03-14",
-    billNumber: "ASE-2025-003",
-    description: "Servicio de aseo - Marzo 2025",
-    amount: 25,
-    paymentMethod: "Pago movil",
-    status: "completed",
-    transactionId: "TXN-001236",
-  },
-]
-
 export function PaymentHistoryList() {
-  const getStatusColor = (status: PaymentHistory["status"]) => {
-    switch (status) {
-      case "completed":
-        return "success"
-      case "pending":
-        return "warning"
-      case "failed":
-        return "destructive"
+  const [pagos, setPagos] = useState<PaymentHistory[]>([]);
+  const { toast } = useToast();
+  const { logout } = useAuth();
+  const getStatusColor = (estado: PaymentHistory["estado"]): "default" | "destructive" | "outline" | "secondary" => {
+    switch (estado) {
+      case "completado":
+        return "secondary";
+      case "pendiente":
+        return "outline";
+      case "rechazado":
+        return "destructive";
       default:
-        return "default"
+        return "default";
     }
-  }
+  };
 
-  const getStatusText = (status: PaymentHistory["status"]) => {
-    switch (status) {
-      case "completed":
-        return "Completado"
-      case "pending":
-        return "Pendiente"
-      case "failed":
-        return "Fallido"
+  const getStatusText = (estado: PaymentHistory["estado"]) => {
+    switch (estado) {
+      case "completado":
+        return "Completado";
+      case "pendiente":
+        return "Pendiente";
+      case "rechazado":
+        return "Rechazado";
       default:
-        return status
+        return estado;
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return new Intl.DateTimeFormat("es-ES", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(date)
-  }
+    }).format(date);
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
       currency: "COP",
-    }).format(amount)
-  }
+    }).format(amount);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "No estás autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    getUltimosPagos(token)
+      .then((data) => {
+        type PagoApi = {
+          _id: string;
+          monto: number;
+          fecha: string;
+          comprobante?: string;
+          estado?: "completado" | "pendiente" | "rechazado";
+          metodo?: string;
+        };
+
+        const mappedPagos: PaymentHistory[] = data.pagos.map(
+          (pago: PagoApi) => ({
+            id: pago._id,
+            monto: pago.monto,
+            fecha: pago.fecha,
+            comprobante: pago.comprobante ?? "",
+            estado: pago.estado ?? "pendiente", // asigno un estado por defecto si no viene
+            metodo: pago.metodo ?? "Pago móvil", // asigno método por defecto si no viene
+          })
+        );
+        setPagos(mappedPagos);
+      })
+      .catch((error) => {
+        toast({
+          title: "Error al cargar pagos",
+          description: error.message,
+          variant: "destructive",
+        });
+         if (error.message === "Token inválido") {
+          logout(); 
+          toast({
+            title: "Sesión expirada",
+            description: "Por favor, inicia sesión nuevamente.",
+            variant: "destructive",
+          });
+        }
+      });
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -96,37 +126,28 @@ export function PaymentHistoryList() {
         <TableHeader>
           <TableRow>
             <TableHead>Fecha</TableHead>
-            <TableHead>Descripción</TableHead>
             <TableHead>Método</TableHead>
             <TableHead>Monto</TableHead>
             <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {demoHistory.map((payment) => (
+          {pagos.map((payment) => (
             <TableRow key={payment.id}>
-              <TableCell>{formatDate(payment.date)}</TableCell>
-              <TableCell>{payment.description}</TableCell>
-              <TableCell>{payment.paymentMethod}</TableCell>
-              <TableCell className="font-semibold">{formatCurrency(payment.amount)}</TableCell>
-              <TableCell>
-                <Badge variant={getStatusColor(payment.status) as any}>{getStatusText(payment.status)}</Badge>
+              <TableCell>{formatDate(payment.fecha)}</TableCell>
+              <TableCell>{payment.metodo}</TableCell>
+              <TableCell className="font-semibold">
+                {formatCurrency(payment.monto)}
               </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="icon" title="Ver comprobante">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" title="Descargar comprobante">
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </div>
+              <TableCell>
+                <Badge variant={getStatusColor(payment.estado)}>
+                  {getStatusText(payment.estado)}
+                </Badge>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

@@ -17,8 +17,13 @@ import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ComplaintModal } from "@/components/complaint-modal";
 
+
+
+
 export default function DashboardPage() {
   const { user } = useAuth();
+  
+  
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [complaintType, setComplaintType] = useState<any>("");
@@ -52,7 +57,6 @@ export default function DashboardPage() {
       .then((res) => res.json())
       .then((data) => {
         setEstadoCuenta(data);
-        console.log(data);
         // setLoading(false);
       })
       .catch((err) => {
@@ -60,6 +64,9 @@ export default function DashboardPage() {
         // setLoading(false);
       });
   }, []);
+
+
+   
   return (
     <ProtectedRoute>
       <DashboardShell>

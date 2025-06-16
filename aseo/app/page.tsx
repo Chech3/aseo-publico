@@ -39,7 +39,7 @@ export default function Home() {
               <div className="space-y-2">
                 <div className="flex justify-center mb-6">
                   <div className=" shadow-xl">
-                    <Image className="rounded-lg" src="/logo.jpeg" alt="Logo" width={200} height={200} />
+                    <Image priority className="rounded-lg w-auto h-auto" src="/logo.jpeg" alt="Logo" width={200} height={200} />
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl bg-gradient-to-r from-green-600 via-blue-600 to-green-700 bg-clip-text text-transparent">
