@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const quejaSchema = new mongoose.Schema({
+  // usuario: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // <- este campo lo relaciona
   nombre: { type: String, required: true },
   correo: { type: String, required: true },
   telefono: { type: String, required: true },

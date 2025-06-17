@@ -25,7 +25,7 @@ router.post('/registrar', authMiddleware, upload.single('comprobante'), registra
 
 router.get('/estado-cuenta', authMiddleware, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('nombre deuda');
+    const user = await User.findById(req.user.id).select('nombre deuda saldoAFavor');
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -40,7 +40,7 @@ router.get('/estado-cuenta', authMiddleware, async (req, res) => {
       nombre: user.nombre,
       deudaActual: user.deuda,
       totalPagado: totalPagado,
-      saldoRestante: user.deuda, // O puedes hacer alguna fórmula aquí si lo deseas.
+      saldoRestante: user.saldoAFavor,
       pagos: pagos, // Si quieres enviar detalle de los pagos
     });
   } catch (error) {
@@ -95,22 +95,15 @@ router.get('/admin/todos', authMiddleware, async (req, res) => {
 
 router.put('/admin/actualizar/:id', authMiddleware, async (req, res) => {
   try {
-    // Validación básica de rol (esto es opcional si ya tienes validación de roles)
     if (req.user.rol !== 'admin') {
-      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+      return res.status(403).json({ message: 'No tienes permisos' });
     }
 
     const { id } = req.params;
     const { monto, estado, metodo, comprobante } = req.body;
 
-    // Validación simple de los campos
     if (!monto || !estado || !metodo) {
       return res.status(400).json({ message: 'Todos los campos son requeridos' });
-    }
-
-    const allowedEstados = ['pendiente', 'completado', 'rechazado'];
-    if (!allowedEstados.includes(estado)) {
-      return res.status(400).json({ message: 'Estado inválido' });
     }
 
     const pagoActualizado = await pago.findByIdAndUpdate(
@@ -119,8 +112,25 @@ router.put('/admin/actualizar/:id', authMiddleware, async (req, res) => {
       { new: true }
     );
 
-    if (!pagoActualizado) {
-      return res.status(404).json({ message: 'Pago no encontrado' });
+    if (pagoActualizado && estado === 'completado') {
+      const user = await User.findById(pagoActualizado.usuario);
+
+      if (user) {
+        const deudaActual = user.deuda || 0;
+        const saldoAFavorActual = user.saldoAFavor || 0;
+
+        if (monto >= deudaActual) {
+          // El pago cubre toda la deuda y sobra
+          const excedente = monto - deudaActual;
+          user.deuda = 0;
+          user.saldoAFavor = saldoAFavorActual + excedente;
+        } else {
+          // El pago cubre parte de la deuda
+          user.deuda = deudaActual - monto;
+        }
+
+        await user.save();
+      }
     }
 
     res.json({ message: 'Pago actualizado correctamente', pago: pagoActualizado });
@@ -129,5 +139,52 @@ router.put('/admin/actualizar/:id', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
+
+router.get('/admin/usuarios', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+    }
+
+    const usuarios = await User.find().select('-password');
+
+    res.json({ usuarios });
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+router.put('/admin/usuarios/:id', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+    }
+
+    const { id } = req.params;
+    const { nombre, cedula, direccion, telefono, correo, deuda } = req.body;
+
+    // Validaciones simples
+    if (!nombre || !cedula || !telefono || !correo || !deuda) {
+      return res.status(400).json({ message: 'Todos los campos son requeridos' });
+    }
+
+    const userActualizado = await User.findByIdAndUpdate(
+      id,
+      { nombre, cedula, direccion, telefono, correo, deuda },
+      { new: true }
+    ).select('-password');
+
+    if (!userActualizado) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.json({ message: 'Usuario actualizado correctamente', usuario: userActualizado });
+  } catch (error) {
+    console.error('Error al actualizar usuario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
 
 module.exports = router;

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const { registrarQueja, obtenerTodasLasQuejas  } = require('../controllers/quejaController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 // Configuración de Multer (reutilizamos la misma de pagos)
 const storage = multer.diskStorage({
@@ -14,9 +16,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-const { registrarQueja } = require('../controllers/quejaController');
 
 // Ruta para registrar quejas
 router.post('/registrar', upload.single('comprobante'), registrarQueja);
+router.get('/quejas', obtenerTodasLasQuejas);
 
 module.exports = router;

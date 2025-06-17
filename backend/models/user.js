@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
     default: 0, // suponiendo que parte sin deuda
   },
   deuda: { type: Number, default: 0 },
+  tarifaMensual: { type: Number, default: 25 },  // cada uno su tarifa
+  saldoAFavor: { type: Number, default: 0 },
 
 });
 
