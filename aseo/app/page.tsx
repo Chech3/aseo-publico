@@ -46,8 +46,7 @@ export default function Home() {
                   Gestiona tus pagos fácilmente
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl">
-                  Registra y administra los pagos del aseo urbano de tu municipio o empresa con
-                  nuestra plataforma moderna.
+                  Registra y administra los pagos del aseo urbano de tu municipio o empresa.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -60,7 +59,7 @@ export default function Home() {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Link href="/about">
+                <Link href="/login">
                   <Button
                     size="lg"
                     variant="outline"
@@ -168,14 +167,11 @@ export default function Home() {
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
           <p className="text-sm text-gray-600">© 2025 aseo. Todos los derechos reservados.</p>
           <div className="flex gap-4">
-            <Link href="/terms" className="text-sm text-green-600 hover:text-green-700 hover:underline">
-              Términos
-            </Link>
-            <Link href="/privacy" className="text-sm text-green-600 hover:text-green-700 hover:underline">
-              Privacidad
-            </Link>
-            <Link href="/contact" className="text-sm text-green-600 hover:text-green-700 hover:underline">
+            <Link href="/" className="text-sm text-green-600 hover:text-green-700 hover:underline">
               Contacto
+            </Link>
+            <Link href="/" className="text-sm text-green-600 hover:text-green-700 hover:underline">
+              Términos y condiciones
             </Link>
           </div>
         </div>

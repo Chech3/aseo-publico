@@ -93,7 +93,7 @@ export default function LoginPage() {
       setError(err.message || "Ocurrió un error inesperado.");
       toast({
         title: "Error de autenticación",
-        description: "Correo electrónico o contraseña incorrectos.",
+        description: "Cedula o contraseña incorrectos.",
         variant: "destructive",
       });
     } finally {
@@ -148,11 +148,6 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={handleChange}
               />
-            </div>
-            <div className="text-right">
-              <Link href="/forgot-password" className="text-sm underline">
-                ¿Olvidaste tu contraseña?
-              </Link>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">

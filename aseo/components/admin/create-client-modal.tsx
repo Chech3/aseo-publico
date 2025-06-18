@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,48 +14,91 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { actualizarUsuario } from "@/hooks/useClientes"; // aquí llamamos al hook que ya creamos
 
-interface CreateClientModalProps {
+interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
+  usuario?: {
+    _id: string;
+    nombre: string;
+    cedula: string;
+    correo: string;
+    telefono: string;
+    direccion: string;
+    deuda: number;
+    getData?: () => Promise<void>;
+  };
+  getData?: () => Promise<void>;
 }
 
-export function CreateClientModal({ isOpen, onClose }: CreateClientModalProps) {
-  const [isCreating, setIsCreating] = useState(false);
+export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps) {
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+
+  const [formData, setFormData] = useState({
+    nombre: "",
+    correo: "",
+    telefono: "",
+    cedula: "",
+    direccion: "",
+    deuda: "",
+    // saldo: 0,
+  });
+
+  useEffect(() => {
+    if (usuario) {
+      setFormData({
+        deuda: usuario.deuda.toString(), // Asumimos que 'saldo' es la deuda
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        telefono: usuario.telefono,
+        cedula: usuario.cedula,
+        direccion: usuario.direccion,
+        // saldo: usuario.saldo,
+      });
+    }
+  }, [usuario]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "saldo" ? parseFloat(value) : value,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsCreating(true);
+    setIsSaving(true);
 
     try {
-      // Simulación de creación de cliente
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const token = localStorage.getItem("adminToken");
+      if (!token || !usuario) throw new Error("No autorizado");
+
+      await actualizarUsuario(usuario._id, formData, token);
 
       toast({
-        title: "Cliente creado exitosamente",
-        description: "El nuevo cliente ha sido agregado al sistema.",
+        title: "Usuario actualizado",
+        description: "El usuario fue actualizado correctamente",
       });
+
+      if (getData) {
+        await getData(); // Llamamos a getData para refrescar la lista de usuarios
+      }
 
       onClose();
-      e.currentTarget.reset();
-    } catch {
+    } catch (error: any) {
       toast({
-        title: "Error al crear cliente",
-        description:
-          "Ha ocurrido un error al crear el cliente. Inténtalo de nuevo.",
+        title: "Error al actualizar",
+        description: error.message,
         variant: "destructive",
       });
+      console.log(error.message);
     } finally {
-      setIsCreating(false);
+      setIsSaving(false);
     }
   };
 
@@ -63,75 +106,57 @@ export function CreateClientModal({ isOpen, onClose }: CreateClientModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Crear nuevo cliente</DialogTitle>
-          <DialogDescription>
-            Ingresa la información del nuevo cliente para el servicio de aseo.
-          </DialogDescription>
+          <DialogTitle>Editar usuario</DialogTitle>
+          <DialogDescription>Modifica la información del usuario</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1">
+            <div className="grid gap-2">
+              <Label htmlFor="nombre">Nombre completo</Label>
+              <Input name="nombre" value={formData.nombre} onChange={handleChange} required />
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Nombre completo</Label>
-              <Input id="name" name="name" required />
+              <Label htmlFor="correo">Correo electrónico</Label>
+              <Input name="correo" value={formData.correo} onChange={handleChange} required />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" name="email" type="email" required />
+              <Label htmlFor="cedula">Cédula</Label>
+              <Input name="cedula" value={formData.cedula} onChange={handleChange} required />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="phone">Teléfono</Label>
-              <Input id="phone" name="phone" required />
+              <Label htmlFor="telefono">Teléfono</Label>
+              <Input name="telefono" value={formData.telefono} onChange={handleChange} required />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="serviceType">Tipo de servicio</Label>
-              <Select name="serviceType" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona el tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="residential">Residencial</SelectItem>
-                  <SelectItem value="commercial">Comercial</SelectItem>
-                  <SelectItem value="office">Oficina</SelectItem>
-                </SelectContent>
-              </Select>
+
+             <div className="grid gap-2">
+              <Label htmlFor="deuda">Deuda</Label>
+              <Input name="deuda" value={formData.deuda} onChange={handleChange} required />
             </div>
+            
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="address">Dirección</Label>
-            <Textarea id="address" name="address" required />
+            <Label htmlFor="direccion">Dirección</Label>
+            <Textarea name="direccion" value={formData.direccion} onChange={handleChange} required />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="monthlyFee">Tarifa mensual (COP)</Label>
-              <Input id="monthlyFee" name="monthlyFee" type="number" required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="startDate">Fecha de inicio</Label>
-              <Input id="startDate" name="startDate" type="date" required />
-            </div>
-          </div>
+          {/* <div className="grid gap-2">
+            <Label htmlFor="saldo">Saldo (COP)</Label>
+            <Input type="number" name="saldo" value={formData.saldo} onChange={handleChange} required />
+          </div> */}
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isCreating}
-            >
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={isCreating}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isCreating ? "Creando..." : "Crear cliente"}
+            <Button type="submit" disabled={isSaving} className="bg-green-600 hover:bg-green-700">
+              {isSaving ? "Guardando..." : "Guardar cambios"}
             </Button>
           </DialogFooter>
         </form>

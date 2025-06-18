@@ -1,3 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import {
   Table,
@@ -17,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Eye, Download, Search, Filter } from "lucide-react";
+import { Download, Search, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getTodosLosPagos } from "@/hooks/useTodosPagos";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +45,9 @@ export function PaymentsManagement() {
   const { logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(
+    null
+  );
+  const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(
     null
   );
 
@@ -95,10 +101,16 @@ export function PaymentsManagement() {
   };
 
   const filteredPayments = pagos.filter((payment) => {
-    const estado = (payment.estado ?? "").toLowerCase(); // asegurar string siempre
-    const matchesSearch = estado.includes(searchTerm.toLowerCase());
+    console.log(payment);
+    const metodo = (payment.metodo ?? "").toLowerCase();
+    const nombre = (payment.nombre ?? "").toLowerCase();
+    const matchesSearch =
+      metodo.includes(searchTerm.toLowerCase()) ||
+      nombre.includes(searchTerm.toLowerCase());
     const matchesStatus =
-      statusFilter === "all" || estado === statusFilter.toLowerCase();
+      statusFilter === "all" ||
+      metodo === statusFilter.toLowerCase() ||
+      nombre === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
@@ -135,11 +147,11 @@ export function PaymentsManagement() {
           (pago: PagoApi) => ({
             id: pago._id,
             monto: pago.monto,
-            nombre: pago.nombre, // Asignar nombre del cliente si está disponible
+            nombre: pago.nombre,
             fecha: pago.fecha,
             comprobante: pago.comprobante ?? "",
-            estado: pago.estado ?? "pendiente", // asigno un estado por defecto si no viene
-            metodo: pago.metodo ?? "Pago móvil", // asigno método por defecto si no viene
+            estado: pago.estado ?? "pendiente",
+            metodo: pago.metodo ?? "Pago móvil",
           })
         );
         setPagos(mappedPagos);
@@ -227,15 +239,15 @@ export function PaymentsManagement() {
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="completado">Completados</SelectItem>
               <SelectItem value="pendiente">Pendientes</SelectItem>
-              <SelectItem value="fallido">Fallidos</SelectItem>
+              <SelectItem value="rechazado">Rechazados</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
+          {/* <Button variant="outline">
             <Filter className="mr-2 h-4 w-4" />
             Filtros avanzados
-          </Button>
+          </Button> */}
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Exportar
@@ -269,6 +281,7 @@ export function PaymentsManagement() {
               <TableHead>Método</TableHead>
               <TableHead>Monto</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Comprobante</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -286,6 +299,21 @@ export function PaymentsManagement() {
                     {getStatusText(payment.estado)}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  {payment.comprobante && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`http://localhost:3001${payment.comprobante}`}
+                      alt="Comprobante"
+                      className="w-32 rounded shadow cursor-pointer hover:scale-105 transition"
+                      onClick={() =>
+                        setImagenSeleccionada(
+                          `http://localhost:3001${payment.comprobante}`
+                        )
+                      }
+                    />
+                  )}
+                </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button
@@ -293,7 +321,7 @@ export function PaymentsManagement() {
                       size="icon"
                       onClick={() => handleEdit(payment)}
                     >
-                      Editar
+                      <Pencil />
                     </Button>
                   </div>
                 </TableCell>
@@ -363,6 +391,23 @@ export function PaymentsManagement() {
                 </Button>
                 <Button onClick={handleUpdate}>Guardar</Button>
               </div>
+            </div>
+          </div>
+        )}
+        {imagenSeleccionada && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+            <div className="relative">
+              <img
+                src={imagenSeleccionada}
+                alt="Vista previa"
+                className="max-w-[90vw] max-h-[80vh] rounded-lg shadow-lg"
+              />
+              <button
+                onClick={() => setImagenSeleccionada(null)}
+                className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full p-1 hover:bg-opacity-75"
+              >
+                ✕
+              </button>
             </div>
           </div>
         )}

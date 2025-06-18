@@ -18,7 +18,6 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Upload, ImageIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -143,7 +142,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
           bill.amount
         )} ha sido registrado y está en proceso de verificación.`,
       });
-
+    
       onClose();
     } catch (error) {
       console.error("Error al registrar el pago:", error);
@@ -270,6 +269,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
                   maxLength={4}
                   required
                   className="h-12"
+                  type="number"
                 />
               </div>
 

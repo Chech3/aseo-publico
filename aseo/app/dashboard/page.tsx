@@ -16,14 +16,10 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ComplaintModal } from "@/components/complaint-modal";
-
-
-
-
+import PaymentInfo from "@/components/payment-info-card";
 export default function DashboardPage() {
   const { user } = useAuth();
-  
-  
+
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [complaintType, setComplaintType] = useState<any>("");
@@ -41,7 +37,7 @@ export default function DashboardPage() {
     setIsComplaintModalOpen(true);
   };
 
-  useEffect(() => {
+  const getData = async () => {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
@@ -63,10 +59,12 @@ export default function DashboardPage() {
         console.error("Error al obtener estado de cuenta:", err);
         // setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    getData();
   }, []);
 
-
-   
   return (
     <ProtectedRoute>
       <DashboardShell>
@@ -98,10 +96,7 @@ export default function DashboardPage() {
                       Deuda pendiente:
                     </span>
                     <span className="text-2xl font-bold text-red-600">
-                      {estadoCuenta?.deudaActual ?? 0 < 0
-                        ? 0
-                        : estadoCuenta?.deudaActual}
-                      $
+                      {estadoCuenta?.deudaActual}$
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -111,42 +106,13 @@ export default function DashboardPage() {
                     <span className="font-medium">15 de Junio, 2025</span>
                   </div>
                   <div className="mt-4">
-                    <ClientPayButton />
+                    <ClientPayButton disabled={estadoCuenta?.deudaActual === 0} />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="col-span-1">
-              <CardHeader className="pb-2">
-                <CardTitle>Datos para transferencia</CardTitle>
-                <CardDescription>
-                  Realiza tu pago por transferencia bancaria
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 bg-green-50 p-4 rounded-md border border-green-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Banco:</span>
-                    <span>Banco Nacional</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Tipo de cuenta:</span>
-                    <span>Corriente</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">
-                      Número de cuenta:
-                    </span>
-                    <span className="font-mono">1234-5678-9012-3456</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Titular:</span>
-                    <span>Servicio de Aseo C.A.</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <PaymentInfo />
           </div>
 
           {/* Sección de estado de cuenta */}
@@ -160,7 +126,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col space-y-1">
                   <span className="text-sm text-muted-foreground">Cliente</span>
                   <span className="font-medium">{user?.nombre}</span>
-                  <span className="text-sm">ID: ASE-12345</span>
+                  {/* <span className="text-sm">ID: ASE-12345</span> */}
                 </div>
                 <div className="flex flex-col space-y-1">
                   <span className="text-sm text-muted-foreground">
@@ -226,7 +192,12 @@ export default function DashboardPage() {
 }
 
 // Componente para el botón de pago con estado local
-function ClientPayButton() {
+
+type ClientPayButtonProps = {
+  disabled?: boolean;
+};
+
+function ClientPayButton({ disabled }: ClientPayButtonProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Datos de factura pendiente
@@ -245,6 +216,7 @@ function ClientPayButton() {
       <Button
         className="w-full bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
         onClick={() => setIsPaymentModalOpen(true)}
+        disabled={disabled}
       >
         <CreditCard className="h-4 w-4" />
         <span>Pagar ahora</span>

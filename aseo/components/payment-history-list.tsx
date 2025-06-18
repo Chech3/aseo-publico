@@ -118,7 +118,7 @@ export function PaymentHistoryList() {
           });
         }
       });
-  }, []);
+  }, [logout, toast]);
 
   return (
     <div className="rounded-md border">

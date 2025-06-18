@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -23,15 +23,15 @@ export default function AdminPage() {
           heading="Panel Administrativo"
           text="Gestiona clientes, facturas y pagos del servicio de aseo."
         >
-          <Button className="bg-green-600 hover:bg-green-700">
+          {/* <Button className="bg-green-600 hover:bg-green-700">
             Generar reporte
-          </Button>
+          </Button> */}
         </AdminHeader>
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
             <TabsTrigger value="overview">Resumen</TabsTrigger>
             <TabsTrigger value="clients">Clientes</TabsTrigger>
-            <TabsTrigger value="bills">Facturas</TabsTrigger>
+            <TabsTrigger value="bills">Quejas</TabsTrigger>
             <TabsTrigger value="payments">Pagos</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
@@ -108,9 +108,9 @@ export default function AdminPage() {
           <TabsContent value="bills" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Gestión de facturas</CardTitle>
+                <CardTitle>Gestión de quejas</CardTitle>
                 <CardDescription>
-                  Crea y administra las facturas de aseo de los clientes.
+                  Administra las quejas de los clientes.
                 </CardDescription>
               </CardHeader>
               <CardContent>
