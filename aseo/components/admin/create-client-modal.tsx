@@ -29,6 +29,7 @@ interface UserModalProps {
     telefono: string;
     direccion: string;
     deuda: number;
+    saldoAFavor?: number; // Asumimos que el saldo a favor es opcional
     getData?: () => Promise<void>;
   };
   getData?: () => Promise<void>;
@@ -45,7 +46,7 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
     cedula: "",
     direccion: "",
     deuda: "",
-    // saldo: 0,
+    saldoAFavor: 0, // Asumimos que 'saldoAFavor' es opcional
   });
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
         telefono: usuario.telefono,
         cedula: usuario.cedula,
         direccion: usuario.direccion,
-        // saldo: usuario.saldo,
+        saldoAFavor: usuario.saldoAFavor || 0, 
       });
     }
   }, [usuario]);
@@ -66,7 +67,7 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "saldo" ? parseFloat(value) : value,
+      [name]: name === "saldoAFavor" ? parseFloat(value) : value,
     }));
   };
 
@@ -138,6 +139,17 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
               <Label htmlFor="deuda">Deuda</Label>
               <Input name="deuda" value={formData.deuda} onChange={handleChange} required />
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="saldoAFavor">Saldo a Favor</Label>
+              <Input
+                name="saldoAFavor"
+                type="number"
+                value={formData.saldoAFavor}
+                onChange={handleChange}
+                required
+              />
+            </div>
             
           </div>
 
@@ -145,11 +157,6 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
             <Label htmlFor="direccion">Dirección</Label>
             <Textarea name="direccion" value={formData.direccion} onChange={handleChange} required />
           </div>
-
-          {/* <div className="grid gap-2">
-            <Label htmlFor="saldo">Saldo (COP)</Label>
-            <Input type="number" name="saldo" value={formData.saldo} onChange={handleChange} required />
-          </div> */}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isSaving}>

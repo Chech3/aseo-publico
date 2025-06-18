@@ -147,7 +147,6 @@ router.get('/admin/usuarios', authMiddleware, async (req, res) => {
     }
 
     const usuarios = await User.find().select('-password');
-
     res.json({ usuarios });
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
@@ -162,16 +161,16 @@ router.put('/admin/usuarios/:id', authMiddleware, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { nombre, cedula, direccion, telefono, correo, deuda } = req.body;
+    const { nombre, cedula, direccion, telefono, correo, deuda, saldoAFavor } = req.body;
 
     // Validaciones simples
-    if (!nombre || !cedula || !telefono || !correo || !deuda) {
+    if (!nombre || !cedula || !telefono || !correo || !deuda ) {
       return res.status(400).json({ message: 'Todos los campos son requeridos' });
     }
 
     const userActualizado = await User.findByIdAndUpdate(
       id,
-      { nombre, cedula, direccion, telefono, correo, deuda },
+      { nombre, cedula, direccion, telefono, correo, deuda, saldoAFavor },
       { new: true }
     ).select('-password');
 

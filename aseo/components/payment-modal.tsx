@@ -138,12 +138,10 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
 
       toast({
         title: "Pago registrado exitosamente",
-        description: `Tu pago de ${formatCurrency(
-          bill.amount
-        )} ha sido registrado y está en proceso de verificación.`,
+        description: `Tu pago ha sido registrado y está en proceso de verificación.`,
       });
-    
       onClose();
+      window.location.reload(); // Recargar la página para actualizar el estado
     } catch (error) {
       console.error("Error al registrar el pago:", error);
       toast({
@@ -254,8 +252,8 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
                   name="monto"
                   placeholder="25"
                   required
-                  className="h-12"    
-                  type="number"              
+                  className="h-12"
+                  type="number"
                 />
               </div>
               <div className="space-y-2">

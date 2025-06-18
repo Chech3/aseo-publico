@@ -197,7 +197,10 @@ type ClientPayButtonProps = {
   disabled?: boolean;
 };
 
-function ClientPayButton({ disabled }: ClientPayButtonProps) {
+function ClientPayButton({ 
+  // disabled
+
+ }: ClientPayButtonProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Datos de factura pendiente
@@ -216,7 +219,7 @@ function ClientPayButton({ disabled }: ClientPayButtonProps) {
       <Button
         className="w-full bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
         onClick={() => setIsPaymentModalOpen(true)}
-        disabled={disabled}
+        // disabled={disabled}
       >
         <CreditCard className="h-4 w-4" />
         <span>Pagar ahora</span>

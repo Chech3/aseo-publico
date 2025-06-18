@@ -24,6 +24,7 @@ interface Client {
   direccion: string;
   cedula: string;
   deuda?: string; // Asumimos que la deuda es opcional
+  saldoAFavor?: string; // Asumimos que el saldo a favor es opcional
 }
 
 export function ClientsList() {
@@ -65,6 +66,7 @@ export function ClientsList() {
           cedula: string;
           correo: string;
           deuda?: string; // Asumimos que la deuda es opcional
+          saldoAFavor?: string; // Asumimos que el saldo a favor es opcional
         };
 
         const mappedClientes: Client[] = data.usuarios.map(
@@ -76,6 +78,7 @@ export function ClientsList() {
             direccion: cliente.direccion,
             cedula: cliente.cedula,
             deuda: cliente.deuda,
+            saldoAFavor: cliente.saldoAFavor 
           })
         );
         setClientes(mappedClientes);
@@ -133,6 +136,7 @@ export function ClientsList() {
               <TableHead>Dirección</TableHead>
               <TableHead>Teléfono</TableHead>
               <TableHead>Deuda</TableHead>
+              <TableHead>Saldo a Favor</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -163,6 +167,9 @@ export function ClientsList() {
                 </TableCell>
                   <TableCell className="max-w-[200px] truncate">
                   {client.deuda}
+                </TableCell>
+                 <TableCell className="max-w-[200px] truncate">
+                  {client.saldoAFavor}
                 </TableCell>
                 {/* <TableCell>{client.serviceType}</TableCell> */}
                 {/* <TableCell className="font-semibold">
@@ -200,6 +207,7 @@ export function ClientsList() {
                 telefono: selectedUsuario.telefono,
                 direccion: selectedUsuario.direccion,
                 deuda: selectedUsuario.deuda,
+                saldoAFavor: selectedUsuario.saldoAFavor,
               }
             : undefined
         }
