@@ -141,7 +141,6 @@ export function PaymentsManagement() {
           metodo?: string;
           nombre: string;
         };
-        console.log("Pagos obtenidos:", data.pagos);
 
         const mappedPagos: PaymentHistory[] = data.pagos.map(
           (pago: PagoApi) => ({

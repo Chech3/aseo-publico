@@ -112,22 +112,41 @@ router.put('/admin/actualizar/:id', authMiddleware, async (req, res) => {
       { new: true }
     );
 
-    if (pagoActualizado && estado === 'completado') {
+    if (!pagoActualizado) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    if (estado === 'completado') {
       const user = await User.findById(pagoActualizado.usuario);
 
       if (user) {
-        const deudaActual = user.deuda || 0;
-        const saldoAFavorActual = user.saldoAFavor || 0;
+        let deudaActual = user.deuda || 0;
+        let saldoAFavor = user.saldoAFavor || 0;
+        let montoPago = Number(monto);
 
-        if (monto >= deudaActual) {
-          // El pago cubre toda la deuda y sobra
-          const excedente = monto - deudaActual;
-          user.deuda = 0;
-          user.saldoAFavor = saldoAFavorActual + excedente;
-        } else {
-          // El pago cubre parte de la deuda
-          user.deuda = deudaActual - monto;
+        // Paso 1: aplicar saldoAFavor *primero* a la deuda
+        if (deudaActual > 0 && saldoAFavor > 0) {
+          if (saldoAFavor >= deudaActual) {
+            saldoAFavor -= deudaActual;
+            deudaActual = 0;
+          } else {
+            deudaActual -= saldoAFavor;
+            saldoAFavor = 0;
+          }
         }
+
+        // Paso 2: aplicar el monto del pago a la deuda restante
+        if (montoPago >= deudaActual) {
+          const excedente = montoPago - deudaActual;
+          deudaActual = 0;
+          saldoAFavor += excedente;
+        } else {
+          deudaActual -= montoPago;
+        }
+
+        // Guardar los valores finales
+        user.deuda = deudaActual;
+        user.saldoAFavor = saldoAFavor;
 
         await user.save();
       }
@@ -168,17 +187,42 @@ router.put('/admin/usuarios/:id', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Todos los campos son requeridos' });
     }
 
-    const userActualizado = await User.findByIdAndUpdate(
-      id,
-      { nombre, cedula, direccion, telefono, correo, deuda, saldoAFavor },
-      { new: true }
-    ).select('-password');
-
-    if (!userActualizado) {
+    const user = await User.findById(id);
+    if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
+    // Lógica para aplicar saldoAFavor si hay nueva deuda
+    let nuevaDeuda = Number(deuda);
+    let nuevoSaldoAFavor = Number(saldoAFavor ?? user.saldoAFavor);
+
+    if (nuevaDeuda > 0 && nuevoSaldoAFavor > 0) {
+      if (nuevoSaldoAFavor >= nuevaDeuda) {
+        nuevoSaldoAFavor -= nuevaDeuda;
+        nuevaDeuda = 0;
+      } else {
+        nuevaDeuda -= nuevoSaldoAFavor;
+        nuevoSaldoAFavor = 0;
+      }
+    }
+
+    // Actualización final
+    const userActualizado = await User.findByIdAndUpdate(
+      id,
+      {
+        nombre,
+        cedula,
+        direccion,
+        telefono,
+        correo,
+        deuda: nuevaDeuda,
+        saldoAFavor: nuevoSaldoAFavor,
+      },
+      { new: true }
+    ).select('-password');
+
     res.json({ message: 'Usuario actualizado correctamente', usuario: userActualizado });
+
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
