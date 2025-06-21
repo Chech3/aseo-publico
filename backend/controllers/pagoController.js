@@ -1,5 +1,5 @@
 const Pago = require('../models/pago');
-const User = require('../models/user');  // <-- este te faltaba
+// const User = require('../models/user'); 
 
 exports.registrarPago = async (req, res) => {
   try {
@@ -43,3 +43,5 @@ exports.registrarPago = async (req, res) => {
     res.status(500).json({ message: "Error al registrar el pago" });
   }
 };
+
+

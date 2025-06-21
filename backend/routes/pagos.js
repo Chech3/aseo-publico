@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const authMiddleware = require('../middlewares/authMiddleware');
-const { registrarPago } = require('../controllers/pagoController');
+const { registrarPago, eliminarPago } = require('../controllers/pagoController');
 const User = require('../models/user');
 const pago = require('../models/pago');
 
@@ -46,6 +46,26 @@ router.get('/estado-cuenta', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al obtener estado de cuenta' });
+  }
+});
+
+router.delete('/admin/pagos/:id', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos' });
+    }
+
+    const { id } = req.params;
+    const pagoEliminado = await pago.findByIdAndDelete(id);
+
+    if (!pagoEliminado) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    res.json({ message: 'Pago eliminado correctamente', pago: pagoEliminado });
+  } catch (error) {
+    console.error('Error al eliminar el pago:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 });
 
