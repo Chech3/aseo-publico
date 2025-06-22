@@ -5,8 +5,7 @@ const jwt = require('jsonwebtoken');
 const validateRegister = require('../validators/registerValidator');
 exports.register = async (req, res) => {
   try {
-    const { nombre, cedula, direccion, telefono, password, correo } = req.body;
-
+    const { nombre, cedula, direccion, telefono, password, correo, rol = 'user' } = req.body;
 
     const errors = validateRegister(req.body);
     if (errors.length > 0) {
@@ -37,6 +36,7 @@ exports.register = async (req, res) => {
       direccion,
       telefono,
       correo,
+      rol, 
       saldo: 0,
       password: hashedPassword,
     });
@@ -44,6 +44,7 @@ exports.register = async (req, res) => {
     await user.save();
     res.status(201).json({ message: 'Usuario registrado correctamente' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Error del servidor' });
   }
 };

@@ -16,6 +16,8 @@ import { UserModal } from "@/components/admin/create-client-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { getTodosLosClientes } from "@/hooks/useClientes";
+import { AddClientModal } from "@/components/admin/AddClientModal";
+
 interface Client {
   id: string;
   nombre: string;
@@ -29,7 +31,9 @@ interface Client {
 
 export function ClientsList() {
   const [searchTerm, setSearchTerm] = useState("");
-  // const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const token = localStorage.getItem("adminToken");
   const { toast } = useToast();
   const { logout } = useAuth();
   const [clientes, setClientes] = useState<Client[]>([]);
@@ -42,7 +46,6 @@ export function ClientsList() {
   );
 
   const getData = async () => {
-    const token = localStorage.getItem("adminToken");
 
     if (!token) {
       toast({
@@ -78,7 +81,7 @@ export function ClientsList() {
             direccion: cliente.direccion,
             cedula: cliente.cedula,
             deuda: cliente.deuda,
-            saldoAFavor: cliente.saldoAFavor 
+            saldoAFavor: cliente.saldoAFavor,
           })
         );
         setClientes(mappedClientes);
@@ -119,7 +122,7 @@ export function ClientsList() {
           </div>
         </div>
         <Button
-          // onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => setShowModal(true)}
           className="bg-green-600 hover:bg-green-700"
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -146,9 +149,6 @@ export function ClientsList() {
                 <TableCell>
                   <div>
                     <div className="font-medium">{client.nombre}</div>
-                    {/* <div className="text-sm text-muted-foreground">
-                      Cliente desde {formatDate(client.joinDate)}
-                    </div> */}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -165,10 +165,10 @@ export function ClientsList() {
                 <TableCell className="max-w-[200px] truncate">
                   {client.telefono}
                 </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
+                <TableCell className="max-w-[200px] truncate">
                   {client.deuda}
                 </TableCell>
-                 <TableCell className="max-w-[200px] truncate">
+                <TableCell className="max-w-[200px] truncate">
                   {client.saldoAFavor}
                 </TableCell>
                 {/* <TableCell>{client.serviceType}</TableCell> */}
@@ -192,6 +192,13 @@ export function ClientsList() {
           </TableBody>
         </Table>
       </div>
+
+      <AddClientModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSuccess={getData}
+        token={token ?? ""}
+      />
 
       <UserModal
         isOpen={!!selectedUsuario}

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminHeader } from "@/components/admin-header";
 import { AdminShell } from "@/components/admin-shell";
 import { ClientsList } from "@/components/admin/clients-list";
-import { BillsManagement } from "@/components/admin/bills-management";
+import { ComplaintsManagement } from "@/components/admin/ComplaintsManagement";
 import { PaymentsManagement } from "@/components/admin/payments-management";
 import { AdminOverview } from "@/components/admin/admin-overview";
 import AdminRoute from "@/components/admin/AdminRoute";
@@ -114,7 +114,7 @@ export default function AdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <BillsManagement />
+                <ComplaintsManagement />
               </CardContent>
             </Card>
           </TabsContent>

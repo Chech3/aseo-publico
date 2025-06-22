@@ -302,8 +302,7 @@ export function ComplaintModal({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-green-600 font-semibold">
               <Upload className="h-5 w-5" />
-              <span className="text-lg">COMPROBANTE DE PAGO</span>
-              <span className="text-red-500">*</span>
+              <span className="text-lg uppercase">Adjuntar Prueba (opcional)</span>
             </div>
 
             <div

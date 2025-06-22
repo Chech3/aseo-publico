@@ -219,7 +219,6 @@ function ClientPayButton({
       <Button
         className="w-full bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
         onClick={() => setIsPaymentModalOpen(true)}
-        // disabled={disabled}
       >
         <CreditCard className="h-4 w-4" />
         <span>Pagar ahora</span>

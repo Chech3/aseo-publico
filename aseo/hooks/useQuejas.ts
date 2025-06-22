@@ -1,21 +1,24 @@
 import { useEffect, useState } from "react";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+export interface Queja {
+_id: string
+tipoQueja: string
+nombre: string
+descripcion: string
+fecha: string
+comprobante?: string
+telefono: string,
+solucionEsperada?: string,
+}
+
 export function useQuejas() {
   const [quejas, setQuejas] = useState<Queja[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
 
-  interface Queja {
-  _id: string
-  tipoQueja: string
-  nombre: string
-  descripcion: string
-  fecha: string
-  comprobante?: string
-}
-
+  
   useEffect(() => {
     async function fetchQuejas() {
       try {

@@ -21,12 +21,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Search, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTodosLosPagos } from "@/hooks/useTodosPagos";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { actualizarPagoAdmin } from "@/hooks/useActualizarPago";
-
+import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 interface PaymentHistory {
   id: string;
   nombre?: string;
@@ -44,16 +46,49 @@ export function PaymentsManagement() {
   const { toast } = useToast();
   const { logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
+  const [showModalD, setShowModalD] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(
     null
   );
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(
     null
   );
+  const [pagoSeleccionado, setPagoSeleccionado] = useState<string | null>(null);
+
+  const modalRef = useRef<HTMLDivElement>(null);
 
   const handleEdit = (payment: PaymentHistory) => {
     setSelectedPayment(payment);
     setShowModal(true);
+  };
+
+  const handleDelete = async () => {
+    const token = localStorage.getItem("adminToken");
+    try {
+      const respuesta = await fetch(
+        `http://localhost:3001/api/pagos/admin/pagos/${pagoSeleccionado}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!respuesta.ok) {
+        const error = await respuesta.json();
+        throw new Error(error.message || "Error al eliminar el pago");
+      }
+      toast({
+        title: "Eliminado con éxito",
+      });
+      getData();
+      // Aquí puedes actualizar la tabla si estás usando useState, etc.
+    } catch (error: any) {
+      console.error(error);
+      alert("Error: " + error.message);
+    }
   };
 
   const getStatusColor = (
@@ -101,22 +136,44 @@ export function PaymentsManagement() {
   };
 
   const filteredPayments = pagos.filter((payment) => {
-    console.log(payment);
     const metodo = (payment.metodo ?? "").toLowerCase();
     const nombre = (payment.nombre ?? "").toLowerCase();
+    const estado = (payment.estado ?? "").toLowerCase();
     const matchesSearch =
       metodo.includes(searchTerm.toLowerCase()) ||
       nombre.includes(searchTerm.toLowerCase());
     const matchesStatus =
-      statusFilter === "all" ||
-      metodo === statusFilter.toLowerCase() ||
-      nombre === statusFilter.toLowerCase();
+      statusFilter === "all" || estado === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
 
   const totalAmount = filteredPayments
     .filter((p) => (p.estado ?? "").toLowerCase() === "completado")
     .reduce((sum, payment) => sum + payment.monto, 0);
+
+  function generarReportePDF(pagos) {
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("Reporte de Pagos", 14, 20);
+
+    autoTable(doc, {
+      startY: 30,
+      head: [["Cliente", "Fecha", "Método", "Monto", "Estado"]],
+      body: pagos.map((p) => [
+        p.nombre,
+        new Date(p.fecha).toLocaleString(),
+        p.metodo,
+        `$${p.monto.toFixed(2)}`,
+        p.estado.charAt(0).toUpperCase() + p.estado.slice(1),
+      ]),
+      styles: { fontSize: 10 },
+      theme: "grid",
+      headStyles: { fillColor: [34, 197, 94] }, // verde como tailwind
+    });
+
+    doc.save("reporte_pagos.pdf");
+  }
 
   const getData = async () => {
     const token = localStorage.getItem("adminToken");
@@ -170,6 +227,12 @@ export function PaymentsManagement() {
           });
         }
       });
+  };
+
+  const handleBackgroundClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      setImagenSeleccionada(null);
+    }
   };
 
   useEffect(() => {
@@ -243,11 +306,10 @@ export function PaymentsManagement() {
           </Select>
         </div>
         <div className="flex gap-2">
-          {/* <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
-            Filtros avanzados
-          </Button> */}
-          <Button variant="outline">
+          <Button
+            onClick={() => generarReportePDF(filteredPayments)}
+            variant="outline"
+          >
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
@@ -322,6 +384,15 @@ export function PaymentsManagement() {
                     >
                       <Pencil />
                     </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        setShowModalD(true);
+                        setPagoSeleccionado(payment.id);
+                      }}
+                    >
+                      Eliminar
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -394,8 +465,11 @@ export function PaymentsManagement() {
           </div>
         )}
         {imagenSeleccionada && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
-            <div className="relative">
+          <div
+            onClick={handleBackgroundClick}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+          >
+            <div ref={modalRef} className="relative">
               <img
                 src={imagenSeleccionada}
                 alt="Vista previa"
@@ -410,6 +484,14 @@ export function PaymentsManagement() {
             </div>
           </div>
         )}
+
+        <ConfirmDeleteDialog
+          open={showModalD}
+          onClose={() => setShowModalD(false)}
+          onConfirm={handleDelete}
+          title="¿Eliminar pago?"
+          message="Esta acción no se puede deshacer. El pago será eliminado permanentemente."
+        />
       </div>
     </div>
   );
