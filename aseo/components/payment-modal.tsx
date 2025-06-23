@@ -199,13 +199,13 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nombres">
+                <Label htmlFor="nombre">
                   Nombres y Apellidos <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   value={user?.nombre || ""}
-                  id="nombres"
-                  name="nombres"
+                  id="nombre"
+                  name="nombre"
                   placeholder="Ingresa tu nombre completo"
                   required
                   className="h-12"

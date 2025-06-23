@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Upload, ImageIcon, FileText } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface ComplaintModalProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export function ComplaintModal({
   const [uploadedFile, setUploadedFile] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
   const getModalTitle = () => {
     switch (complaintType) {
       case "general":
@@ -107,14 +109,10 @@ export function ComplaintModal({
     const formData = new FormData(event.currentTarget);
 
     // Validar campos requeridos
-    const nombre = formData.get("nombre") as string;
-    const correo = formData.get("correo") as string;
-    const telefono = formData.get("telefono") as string;
     const tipoQueja = formData.get("tipoQueja") as string;
     const descripcion = formData.get("descripcion") as string;
-    const cedula = formData.get("cedula") as string;
 
-    if (!nombre || !correo || !telefono || !tipoQueja || !descripcion || !cedula) {
+    if ( !tipoQueja || !descripcion ) {
       toast({
         title: "Campos requeridos",
         description: "Por favor completa todos los campos marcados con *.",
@@ -128,11 +126,11 @@ export function ComplaintModal({
       const formPayload = new FormData();
       formPayload.append("comprobante", uploadedFile); // archivo real
       formPayload.append("tipoQueja", tipoQueja || "");
-      formPayload.append("cedula", cedula || "");
-      formPayload.append("nombre", nombre || "");
-      formPayload.append("correo", correo || "");
-      formPayload.append("telefono", telefono || "");
       formPayload.append("descripcion", descripcion || "");
+      formPayload.append("cedula", user?.cedula || "");
+      formPayload.append("nombre", user?.nombre || "");
+      formPayload.append("correo", user?.correo || "");
+      formPayload.append("telefono", user?.telefono || "");
       formPayload.append(
         "fechaIncidente",
         (formData.get("fechaIncidente") as string) || ""
@@ -192,8 +190,10 @@ export function ComplaintModal({
                 <Input
                   id="nombre"
                   name="nombre"
+                  value={user?.nombre || ""}
                   placeholder="Tu nombre completo"
                   required
+                  disabled
                 />
               </div>
               <div className="space-y-2">
@@ -203,9 +203,11 @@ export function ComplaintModal({
                 <Input
                   id="correo"
                   name="correo"
+                   value={user?.correo || ""}
                   type="email"
                   placeholder="tu@correo.com"
                   required
+                  disabled
                 />
               </div>
             </div>
@@ -218,13 +220,15 @@ export function ComplaintModal({
                 <Input
                   id="telefono"
                   name="telefono"
+                   value={user?.telefono || ""}
                   placeholder="Número de teléfono"
                   required
+                  disabled
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cedula">Cedula</Label>
-                <Input id="cedula" name="cedula" placeholder="28123123" />
+                <Input id="cedula" name="cedula" value={user?.cedula || ""} placeholder="28123123" disabled />
               </div>
             </div>
           </div>

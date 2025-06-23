@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit } from "lucide-react";
+import { Search, Edit, StickyNote } from "lucide-react";
 import { useQuejas, Queja } from "@/hooks/useQuejas";
 import { QuejaModal } from "../QuejaModal";
+import { getBase64FromUrl } from "@/lib/imageTo64";
+import jsPDF from "jspdf";
 
 export function ComplaintsManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,6 +51,58 @@ export function ComplaintsManagement() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleExportPDF = async (queja: any) => {
+    if (!queja) return;
+
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Reporte de Queja", 14, 20);
+
+    doc.setFontSize(12);
+    let y = 30;
+
+    const addLine = (label: string, value: string) => {
+      const splitText = doc.splitTextToSize(`${label}: ${value}`, 180);
+      doc.text(splitText, 14, y);
+      y += splitText.length * 8;
+    };
+
+    addLine("Tipo", queja.tipoQueja);
+    addLine("Nombre", queja.nombre);
+    addLine("Teléfono", queja.telefono);
+    addLine("Descripción", queja.descripcion);
+    addLine("Solución esperada", queja.solucionEsperada || "No especificada");
+    addLine("Fecha", formatDate(queja.fecha));
+
+    // Agregar comprobante si existe
+    if (queja.comprobante) {
+      try {
+        const base64Img = await getBase64FromUrl(
+          `http://localhost:3001${queja.comprobante}`
+        );
+        const imgProps = doc.getImageProperties(base64Img);
+
+        // Ajusta el tamaño de la imagen proporcionalmente (máx 160px ancho)
+        const imgWidth = 80;
+        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+        if (y + imgHeight > 280) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.text("Prueba:", 14, y + 10);
+        doc.addImage(base64Img, "JPEG", 14, y + 15, imgWidth, imgHeight);
+      } catch (err) {
+        console.error("No se pudo cargar la imagen:", err);
+        doc.text("Comprobante: (Error al cargar imagen)", 14, y + 10);
+      }
+    }
+
+    doc.save(`queja_${queja.nombre.replace(/\s+/g, "_")}.pdf`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -75,7 +129,7 @@ export function ComplaintsManagement() {
               {/* <TableHead>Descripción</TableHead> */}
               {/* <TableHead>Solución Esperada</TableHead> */}
               <TableHead>Fecha</TableHead>
-              <TableHead>Comprobante</TableHead>
+              <TableHead>Prueba</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -130,6 +184,15 @@ export function ComplaintsManagement() {
                       onClick={() => setQuejaSeleccionada(queja)}
                     >
                       <Search className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        handleExportPDF(queja);
+                      }}
+                    >
+                      <StickyNote />
                     </Button>
                   </TableCell>
                 </TableRow>

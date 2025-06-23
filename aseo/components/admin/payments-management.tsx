@@ -151,7 +151,7 @@ export function PaymentsManagement() {
     .filter((p) => (p.estado ?? "").toLowerCase() === "completado")
     .reduce((sum, payment) => sum + payment.monto, 0);
 
-  function generarReportePDF(pagos) {
+  function generarReportePDF(pagos: any) {
     const doc = new jsPDF();
 
     doc.setFontSize(16);
@@ -160,7 +160,7 @@ export function PaymentsManagement() {
     autoTable(doc, {
       startY: 30,
       head: [["Cliente", "Fecha", "Método", "Monto", "Estado"]],
-      body: pagos.map((p) => [
+      body: pagos.map((p: any) => [
         p.nombre,
         new Date(p.fecha).toLocaleString(),
         p.metodo,
