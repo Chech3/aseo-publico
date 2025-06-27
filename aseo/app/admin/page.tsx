@@ -1,4 +1,4 @@
-// import { Button } from "@/components/ui/button";
+"use client";
 import {
   Card,
   CardContent,
@@ -14,8 +14,99 @@ import { ComplaintsManagement } from "@/components/admin/ComplaintsManagement";
 import { PaymentsManagement } from "@/components/admin/payments-management";
 import { AdminOverview } from "@/components/admin/admin-overview";
 import AdminRoute from "@/components/admin/AdminRoute";
+import { useToast } from "@/hooks/use-toast";
+import {
+  getTodosLosClientes,
+  getTodosLosDeudores,
+  getPagosHoy,
+} from "@/hooks/useTodosPagos";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
 
+type Info = {
+  cantidad: number;
+};
 export default function AdminPage() {
+  const [data, setData] = useState(0);
+  const [pagosHoy, setPagosHoy] = useState(0);
+  const [deudores, setDeudores] = useState(0);
+  const { toast } = useToast();
+  const { logout } = useAuth();
+
+  const getData = async () => {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      toast({
+        title: "Error",
+        description: "No estás autenticado",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    getTodosLosClientes(token)
+      .then((data: Info) => {
+        setData(data?.cantidad);
+      })
+      .catch((error: Error) => {
+        toast({
+          title: "Error al cargar usuarios",
+          description: error.message,
+          variant: "destructive",
+        });
+        if (error.message === "Token inválido") {
+          logout();
+          toast({
+            title: "Sesión expirada",
+            description: "Por favor, inicia sesión nuevamente.",
+            variant: "destructive",
+          });
+        }
+      });
+
+    getTodosLosDeudores(token)
+      .then((data: Info) => {
+        setDeudores(data?.cantidad);
+      })
+      .catch((error: Error) => {
+        toast({
+          title: "Error al cargar deudores",
+          description: error.message,
+          variant: "destructive",
+        });
+        if (error.message === "Token inválido") {
+          logout();
+          toast({
+            title: "Sesión expirada",
+            description: "Por favor, inicia sesión nuevamente.",
+            variant: "destructive",
+          });
+        }
+      });
+    getPagosHoy(token)
+      .then((data: Info) => {
+        setPagosHoy(data?.cantidad);
+      })
+      .catch((error: Error) => {
+        toast({
+          title: "Error al cargar pagos",
+          description: error.message,
+          variant: "destructive",
+        });
+        if (error.message === "Token inválido") {
+          logout();
+          toast({
+            title: "Sesión expirada",
+            description: "Por favor, inicia sesión nuevamente.",
+            variant: "destructive",
+          });
+        }
+      });
+  };
+  useEffect(() => {
+    getData();
+  }, []);
   return (
     <AdminRoute>
       <AdminShell>
@@ -43,49 +134,33 @@ export default function AdminPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">156</div>
-                  <p className="text-xs text-muted-foreground">+12 este mes</p>
+                  <div className="text-2xl font-bold">{data}</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Facturas pendientes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">23</div>
-                  <p className="text-xs text-muted-foreground">-5 desde ayer</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Pagos hoy
+                    Pagos pendientes
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    $4,250
+                    {deudores}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    18 pagos procesados
-                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                    Ingresos del mes
+                    Pagos realizados en este dia
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    $45,230
+
+                   {pagosHoy}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    +15% vs mes anterior
-                  </p>
+                  <p className="text-xs text-muted-foreground"></p>
                 </CardContent>
               </Card>
             </div>

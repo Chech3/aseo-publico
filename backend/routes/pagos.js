@@ -113,6 +113,160 @@ router.get('/admin/todos', authMiddleware, async (req, res) => {
 });
 
 
+router.get('/admin/cantidad', authMiddleware, async (req, res) => {
+  try {
+    // Solo administradores pueden acceder
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+    }
+
+    // Cuenta usuarios cuyo rol NO sea 'admin'
+    const cantidadUsuarios = await User.countDocuments({ rol: { $ne: 'admin' } });
+
+    res.json({ cantidad: cantidadUsuarios });
+  } catch (error) {
+    console.error('Error al obtener cantidad de usuarios:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+router.get('/admin/cantidad-pagos-hoy', authMiddleware, async (req, res) => {
+  try {
+    // Solo administradores pueden acceder
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+    }
+
+    // Definir el rango del día de hoy
+    const inicioDia = new Date();
+    inicioDia.setHours(0, 0, 0, 0);
+
+    const finDia = new Date();
+    finDia.setHours(23, 59, 59, 999);
+
+    // Buscar pagos realizados hoy
+    const cantidadPagosHoy = await pago.countDocuments({
+      fecha: { $gte: inicioDia, $lte: finDia },
+      estado: 'completado' // opcional: solo contar los pagos confirmados
+    });
+
+    res.json({ cantidad: cantidadPagosHoy });
+  } catch (error) {
+    console.error('Error al obtener cantidad de pagos de hoy:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
+router.get('/admin/grafico-ingresos-mensuales', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos' });
+    }
+    const yearNow = new Date().getFullYear();
+
+    const resultados = await pago.aggregate([
+  {
+    $match: {
+      estado: 'completado',
+      fecha: {
+        $gte: new Date(`${yearNow}-01-01T00:00:00Z`),
+        $lte: new Date(`${yearNow}-12-31T23:59:59Z`)
+      }
+    }
+  },
+  {
+    $group: {
+      _id: { mes: { $month: "$fecha" } },
+      ingresos: { $sum: "$monto" },
+      clientes: { $addToSet: "$usuario" }
+    }
+  },
+  {
+    $project: {
+      name: { $arrayElemAt: [["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"], { $subtract: ["$_id.mes", 1] }] },
+      ingresos: 1,
+      clientes: { $size: "$clientes" }
+    }
+  },
+  { $sort: { "_id.mes": 1 } }
+]);
+
+    res.json(resultados);
+  } catch (error) {
+    console.error('Error en gráfico mensual:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
+router.get('/admin/grafico-pagos-diarios', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos' });
+    }
+
+    const dias = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+    const hoy = new Date();
+    const inicioSemana = new Date(hoy);
+    inicioSemana.setDate(hoy.getDate() - hoy.getDay()); // domingo
+
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(inicioSemana.getDate() + 6); // sábado
+
+    const resultados = await pago.aggregate([
+      {
+        $match: {
+          estado: 'completado',
+          fecha: {
+            $gte: new Date(inicioSemana.setHours(0, 0, 0, 0)),
+            $lte: new Date(finSemana.setHours(23, 59, 59, 999))
+          }
+        }
+      },
+      {
+        $group: {
+          _id: { dia: { $dayOfWeek: "$fecha" } },
+          pagos: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          day: { $arrayElemAt: [dias, { $subtract: ["$_id.dia", 1] }] },
+          pagos: 1
+        }
+      },
+      { $sort: { "_id.dia": 1 } }
+    ]);
+
+    res.json(resultados);
+  } catch (error) {
+    console.error('Error en gráfico diario:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
+
+router.get('/admin/cantidad-deudores', authMiddleware, async (req, res) => {
+  try {
+    // Validación para asegurar que solo admin acceda
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para realizar esta acción' });
+    }
+
+    // Cuenta usuarios con deuda mayor a 0
+    const cantidadDeudores = await User.countDocuments({ deuda: { $gt: 0 } });
+
+    res.json({ cantidad: cantidadDeudores });
+  } catch (error) {
+    console.error('Error al obtener cantidad de deudores:', error);
+    res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
 router.put('/admin/actualizar/:id', authMiddleware, async (req, res) => {
   try {
     if (req.user.rol !== 'admin') {

@@ -1,28 +1,16 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useMonthlyChartData, useWeeklyPaymentsChartData } from "@/hooks/usedashboardData";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Line, LineChart } from "recharts"
 
-const monthlyData = [
-  { name: "Ene", ingresos: 2400000, clientes: 45 },
-  { name: "Feb", ingresos: 2800000, clientes: 48 },
-  { name: "Mar", ingresos: 3200000, clientes: 52 },
-  { name: "Abr", ingresos: 2900000, clientes: 50 },
-  { name: "May", ingresos: 3500000, clientes: 55 },
-  { name: "Jun", ingresos: 4200000, clientes: 58 },
-]
-
-const dailyPayments = [
-  { day: "Lun", pagos: 12 },
-  { day: "Mar", pagos: 19 },
-  { day: "Mié", pagos: 15 },
-  { day: "Jue", pagos: 22 },
-  { day: "Vie", pagos: 18 },
-  { day: "Sáb", pagos: 8 },
-  { day: "Dom", pagos: 5 },
-]
 
 export function AdminOverview() {
+   const { data: monthlyData, loading: loadingMonthly } = useMonthlyChartData();
+  const { data: dailyPayments, loading: loadingDaily } = useWeeklyPaymentsChartData();
+
+   if (loadingMonthly || loadingDaily) return <p className="p-4">Cargando datos...</p>;
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
       <Card className="col-span-4">

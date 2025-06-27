@@ -46,7 +46,7 @@ export function ComplaintModal({
   const getModalTitle = () => {
     switch (complaintType) {
       case "general":
-        return "Registrar queja general";
+        return "Registrar sugerencia";
       case "service":
         return "Queja sobre el servicio";
       default:
@@ -57,7 +57,7 @@ export function ComplaintModal({
   const getModalDescription = () => {
     switch (complaintType) {
       case "general":
-        return "Describe tu queja o inconveniente para que podamos ayudarte a resolverlo.";
+        return "Describe tu queja aporte que crees puede ayudarnos a mejorar.";
       case "service":
         return "Cuéntanos qué aspectos del servicio de aseo no cumplieron tus expectativas.";
       default:
@@ -112,7 +112,7 @@ export function ComplaintModal({
     const tipoQueja = formData.get("tipoQueja") as string;
     const descripcion = formData.get("descripcion") as string;
 
-    if ( !tipoQueja || !descripcion ) {
+    if (!tipoQueja || !descripcion) {
       toast({
         title: "Campos requeridos",
         description: "Por favor completa todos los campos marcados con *.",
@@ -193,7 +193,7 @@ export function ComplaintModal({
                   value={user?.nombre || ""}
                   placeholder="Tu nombre completo"
                   required
-                  disabled
+                  disabled={!!user}
                 />
               </div>
               <div className="space-y-2">
@@ -203,11 +203,11 @@ export function ComplaintModal({
                 <Input
                   id="correo"
                   name="correo"
-                   value={user?.correo || ""}
+                  value={user?.correo || ""}
                   type="email"
                   placeholder="tu@correo.com"
                   required
-                  disabled
+                  disabled={!!user}
                 />
               </div>
             </div>
@@ -220,15 +220,21 @@ export function ComplaintModal({
                 <Input
                   id="telefono"
                   name="telefono"
-                   value={user?.telefono || ""}
+                  value={user?.telefono || ""}
                   placeholder="Número de teléfono"
                   required
-                  disabled
+                  disabled={!!user}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cedula">Cedula</Label>
-                <Input id="cedula" name="cedula" value={user?.cedula || ""} placeholder="28123123" disabled />
+                <Input
+                  id="cedula"
+                  name="cedula"
+                  value={user?.cedula || ""}
+                  placeholder="28123123"
+                  disabled={!!user}
+                />
               </div>
             </div>
           </div>
@@ -237,17 +243,17 @@ export function ComplaintModal({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-green-600 font-semibold">
               <AlertTriangle className="h-5 w-5" />
-              <span className="text-lg">DETALLES DE LA QUEJA</span>
+              <span className="text-lg">DETALLES DE LA QUEJA O APORTE</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="tipoQueja">
-                  Tipo de queja <span className="text-red-500">*</span>
+                  Tipo de queja o aporte <span className="text-red-500">*</span>
                 </Label>
                 <Select name="tipoQueja" required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Selecciona el tipo de queja" />
+                    <SelectValue placeholder="Selecciona" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="calidad-servicio">
@@ -283,7 +289,7 @@ export function ComplaintModal({
               <Textarea
                 id="descripcion"
                 name="descripcion"
-                placeholder="Describe detalladamente tu queja o inconveniente..."
+                placeholder="Describe detalladamente tu queja o aporte..."
                 rows={4}
                 required
               />
@@ -296,7 +302,7 @@ export function ComplaintModal({
               <Textarea
                 id="solucionEsperada"
                 name="solucionEsperada"
-                placeholder="Describe qué te gustaría que hiciéramos para resolver tu queja..."
+                placeholder="Describe qué te gustaría que hiciéramos para resolver la problemática..."
                 rows={3}
               />
             </div>
@@ -306,7 +312,9 @@ export function ComplaintModal({
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-green-600 font-semibold">
               <Upload className="h-5 w-5" />
-              <span className="text-lg uppercase">Adjuntar Prueba (opcional)</span>
+              <span className="text-lg uppercase">
+                Adjuntar Prueba (opcional)
+              </span>
             </div>
 
             <div
@@ -360,7 +368,7 @@ export function ComplaintModal({
               disabled={isSubmitting}
               className="bg-green-600 hover:bg-green-700"
             >
-              {isSubmitting ? "Enviando queja..." : "Enviar queja"}
+              {isSubmitting ? "Enviando..." : "Enviar"}
             </Button>
           </DialogFooter>
         </form>

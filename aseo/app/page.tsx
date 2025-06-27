@@ -301,7 +301,7 @@ export default function Component() {
                 className="gap-2 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-xl transform hover:scale-105 transition-all"
               >
                 <MessageSquare className="h-5 w-5" />
-                Queja del Servicio
+                Queja
               </Button>
               <Button
                 onClick={() => {
@@ -313,7 +313,7 @@ export default function Component() {
                 className="gap-2 border-red-300 text-red-700 hover:bg-red-50 shadow-lg"
               >
                 <MessageSquare className="h-5 w-5" />
-                Queja General
+                Sugerencia
               </Button>
             </div>
           </div>

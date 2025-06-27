@@ -167,7 +167,7 @@ export default function DashboardPage() {
                   className="flex items-center gap-2"
                 >
                   <Info className="h-4 w-4" />
-                  <span>¿Alguna queja?</span>
+                  <span>¿Alguna queja o sugerencia?</span>
                 </Button>
                 <Button
                   onClick={() => handleComplaintClick("service")}
