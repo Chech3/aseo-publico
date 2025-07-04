@@ -25,14 +25,14 @@ interface PaymentHistory {
 export function PaymentHistoryList() {
   const [pagos, setPagos] = useState<PaymentHistory[]>([]);
   const { logout } = useAuth();
-  const getStatusColor = (estado: PaymentHistory["estado"]): "default" | "error" | "outline" | "secondary" => {
+  const getStatusColor = (estado: PaymentHistory["estado"]): "default" | "destructive" | "outline" | "secondary" => {
     switch (estado) {
       case "completado":
         return "secondary";
       case "pendiente":
         return "outline";
       case "rechazado":
-        return "error";
+        return "destructive";
       default:
         return "default";
     }
