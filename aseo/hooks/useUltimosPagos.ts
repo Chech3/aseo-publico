@@ -13,6 +13,5 @@ export async function getUltimosPagos(token: string) {
   }
   
   const data = await response.json();
-  console.log(data.pagos);
   return data;
 }

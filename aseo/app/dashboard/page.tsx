@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +22,10 @@ export default function DashboardPage() {
   const { user } = useAuth();
 
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [complaintType, setComplaintType] = useState<any>("");
   const [estadoCuenta, setEstadoCuenta] = useState<EstadoCuenta | null>(null);
+  const [mensaje,setMensaje] = useState<any>("");
+  const [deuda,setDeuda] = useState<any>("");
 
   type EstadoCuenta = {
     deudaActual: number;
@@ -58,6 +60,19 @@ export default function DashboardPage() {
       .catch((err) => {
         console.error("Error al obtener estado de cuenta:", err);
         // setLoading(false);
+      });
+
+    fetch("http://localhost:3001/api/pagos/estado-deuda", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setMensaje(data.mensaje);
+        setDeuda(data.deudaCalculada);
+        console.log(data.deudaCalculada);
+        console.log(data.mensaje);
       });
   };
 
@@ -106,7 +121,9 @@ export default function DashboardPage() {
                     <span className="font-medium">15 de Junio, 2025</span>
                   </div>
                   <div className="mt-4">
-                    <ClientPayButton disabled={estadoCuenta?.deudaActual === 0} />
+                    <ClientPayButton
+                      disabled={estadoCuenta?.deudaActual === 0}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -134,6 +151,11 @@ export default function DashboardPage() {
                   </span>
                   <span className="font-medium">{user?.direccion}</span>
                   <span className="text-sm">Falcón, Venezuela</span>
+                </div>
+                <div className="flex flex-col space-y1">
+                  <span>Razón de Deuda</span>
+                  <span className="font-medium">{deuda === 0 && "0" ? "No posee deuda" : mensaje}</span>
+                  {/* <span className="text-sm">{meses}</span> */}
                 </div>
               </div>
             </CardContent>
@@ -197,10 +219,9 @@ type ClientPayButtonProps = {
   disabled?: boolean;
 };
 
-function ClientPayButton({ 
-  // disabled
+function ClientPayButton({}: // disabled
 
- }: ClientPayButtonProps) {
+ClientPayButtonProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Datos de factura pendiente

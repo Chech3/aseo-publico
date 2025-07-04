@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, StickyNote } from "lucide-react";
+import { Search, StickyNote } from "lucide-react";
 import { useQuejas, Queja } from "@/hooks/useQuejas";
 import { QuejaModal } from "../QuejaModal";
 import { getBase64FromUrl } from "@/lib/imageTo64";
@@ -175,9 +175,6 @@ export function ComplaintsManagement() {
                     )}
                   </TableCell>
                   <TableCell className="text-end space-x-2">
-                    <Button variant="outline" size="icon">
-                      <Edit className="h-4 w-4" />
-                    </Button>
                     <Button
                       variant="outline"
                       size="icon"

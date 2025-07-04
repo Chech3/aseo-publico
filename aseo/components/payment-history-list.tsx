@@ -132,8 +132,8 @@ export function PaymentHistoryList() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {pagos.map((payment) => (
-            <TableRow key={payment.id}>
+          {pagos.map((payment, index) => (
+            <TableRow key={index}>
               <TableCell>{formatDate(payment.fecha)}</TableCell>
               <TableCell>{payment.metodo}</TableCell>
               <TableCell className="font-semibold">

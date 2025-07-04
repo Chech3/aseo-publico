@@ -14,7 +14,7 @@ export async function getTodosLosPagos(token: string) {
 }
 
 
-export async function getTodosLosClientes(token: string) {
+export async function getTodosLosClientesCantidad(token: string) {
   const res = await fetch("http://localhost:3001/api/pagos/admin/cantidad", {
     headers: {
       Authorization: `Bearer ${token}`,

@@ -49,6 +49,37 @@ router.get('/estado-cuenta', authMiddleware, async (req, res) => {
   }
 });
 
+
+router.get('/estado-deuda', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    const deuda = user.deuda
+    const tarifaMensual = user.tarifaMensual
+
+    const deudaCalculada = deuda * tarifaMensual
+
+    const mesesDeuda = user.deuda
+
+
+
+    res.json({
+      mesesDeuda,
+      deudaCalculada,
+      saldoAFavor: user.saldoAFavor,
+      mensaje: `Debes $${deudaCalculada} porque tienes ${mesesDeuda} mes(es) sin pagar (tarifa mensual: $${tarifaMensual}).`
+    });
+  } catch (error) {
+    console.error("Error al calcular deuda:", error);
+    res.status(500).json({ message: "Error interno al calcular la deuda" });
+  }
+});
+
+
 router.delete('/admin/pagos/:id', authMiddleware, async (req, res) => {
   try {
     if (req.user.rol !== 'admin') {
@@ -400,6 +431,40 @@ router.put('/admin/usuarios/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error al actualizar usuario:', error);
     res.status(500).json({ message: 'Error interno del servidor' });
+  }
+});
+
+
+router.post('/admin/facturar', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.rol !== 'admin') {
+      return res.status(403).json({ message: 'No tienes permisos para facturar' });
+    }
+
+    const usuarios = await User.find({ rol: { $ne: 'admin' } });
+
+    let actualizados = 0;
+
+    for (const usuario of usuarios) {
+      const monto = usuario.tarifaMensual || 1; // Puedes dejar fijo si quieres
+
+      usuario.deuda = (usuario.deuda || 0) + monto;
+
+      // Si tiene saldoAFavor, descontarlo directamente
+      if (usuario.saldoAFavor && usuario.saldoAFavor > 0) {
+        const aplicar = Math.min(usuario.deuda, usuario.saldoAFavor);
+        usuario.deuda -= aplicar;
+        usuario.saldoAFavor -= aplicar;
+      }
+
+      await usuario.save();
+      actualizados++;
+    }
+
+    res.json({ message: `Facturación completada para ${actualizados} usuarios.` });
+  } catch (error) {
+    console.error('Error al facturar:', error);
+    res.status(500).json({ message: 'Error interno al facturar' });
   }
 });
 

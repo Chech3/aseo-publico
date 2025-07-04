@@ -16,12 +16,13 @@ import { AdminOverview } from "@/components/admin/admin-overview";
 import AdminRoute from "@/components/admin/AdminRoute";
 import { useToast } from "@/hooks/use-toast";
 import {
-  getTodosLosClientes,
+  getTodosLosClientesCantidad,
   getTodosLosDeudores,
   getPagosHoy,
 } from "@/hooks/useTodosPagos";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 type Info = {
   cantidad: number;
@@ -32,10 +33,9 @@ export default function AdminPage() {
   const [deudores, setDeudores] = useState(0);
   const { toast } = useToast();
   const { logout } = useAuth();
+  const token = localStorage.getItem("adminToken");
 
   const getData = async () => {
-    const token = localStorage.getItem("adminToken");
-
     if (!token) {
       toast({
         title: "Error",
@@ -45,7 +45,7 @@ export default function AdminPage() {
       return;
     }
 
-    getTodosLosClientes(token)
+    getTodosLosClientesCantidad(token)
       .then((data: Info) => {
         setData(data?.cantidad);
       })
@@ -103,6 +103,34 @@ export default function AdminPage() {
           });
         }
       });
+
+    
+  };
+
+  const factura = async () => {
+    const confirm = window.confirm(
+      "¿Deseas generar facturas para todos los usuarios?"
+    );
+    if (!confirm) return;
+    try {
+      const res = await fetch(
+        "http://localhost:3001/api/pagos/admin/facturar",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+      alert(data.message);
+      window.location.reload();
+    } catch (err) {
+      console.error("Error al facturar:", err);
+      alert("Error al generar las facturas");
+    }
   };
   useEffect(() => {
     getData();
@@ -114,9 +142,9 @@ export default function AdminPage() {
           heading="Panel Administrativo"
           text="Gestiona clientes, facturas y pagos del servicio de aseo."
         >
-          {/* <Button className="bg-green-600 hover:bg-green-700">
-            Generar reporte
-          </Button> */}
+          <Button onClick={factura} className="bg-green-600 hover:bg-green-700">
+            Generar deuda
+          </Button>
         </AdminHeader>
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
@@ -157,8 +185,7 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-
-                   {pagosHoy}
+                    {pagosHoy}
                   </div>
                   <p className="text-xs text-muted-foreground"></p>
                 </CardContent>

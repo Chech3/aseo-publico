@@ -132,7 +132,7 @@ export function PendingBillsList() {
           className="bg-green-600 hover:bg-green-700"
           onClick={() => {
             // Lógica para pagar todo
-            console.log("Pagar todo")
+            // console.log("Pagar todo")
           }}
         >
           <CreditCard className="mr-2 h-4 w-4" />
