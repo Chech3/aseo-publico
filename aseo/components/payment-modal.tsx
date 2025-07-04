@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
 import { CreditCard, Upload, ImageIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -30,7 +30,6 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { toast } = useToast();
   const { user } = useAuth();
 
   if (!bill) return null;
@@ -56,10 +55,10 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
     if (file) {
       // Validar tamaño del archivo (5MB máximo)
       if (file.size > 5 * 1024 * 1024) {
-        toast({
+         Swal.fire({
           title: "Archivo muy grande",
-          description: "El archivo debe ser menor a 5MB.",
-          variant: "destructive",
+          text: "El archivo debe ser menor a 5MB.",
+          icon: "error",
         });
         return;
       }
@@ -72,10 +71,10 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
         "image/webp",
       ];
       if (!allowedTypes.includes(file.type)) {
-        toast({
+         Swal.fire({
           title: "Tipo de archivo no válido",
-          description: "Solo se permiten archivos PNG, JPG, JPEG y WEBP.",
-          variant: "destructive",
+          text: "Solo se permiten archivos PNG, JPG, JPEG y WEBP.",
+          icon: "error",
         });
         return;
       }
@@ -99,20 +98,20 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
     const monto = formData.get("monto") as string;
     const metodo = formData.get("metodo") as string;
     if (!referencia) {
-      toast({
+       Swal.fire({
         title: "Campos requeridos",
-        description: "Por favor complete el campo referencia *.",
-        variant: "destructive",
+        text: "Por favor complete el campo referencia *.",
+        icon: "error",
       });
       setIsProcessing(false);
       return;
     }
 
     if (!uploadedFile) {
-      toast({
+       Swal.fire({
         title: "Comprobante requerido",
-        description: "Por favor sube el comprobante de pago.",
-        variant: "destructive",
+        text: "Por favor sube el comprobante de pago.",
+        icon: "error",
       });
       setIsProcessing(false);
       return;
@@ -136,19 +135,19 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
         body: formPayload,
       });
 
-      toast({
+       Swal.fire({
         title: "Pago registrado exitosamente",
-        description: `Tu pago ha sido registrado y está en proceso de verificación.`,
+        text: `Tu pago ha sido registrado y está en proceso de verificación.`,
       });
       onClose();
       window.location.reload(); // Recargar la página para actualizar el estado
     } catch (error) {
       console.error("Error al registrar el pago:", error);
-      toast({
+       Swal.fire({
         title: "Error al registrar el pago",
-        description:
+        text:
           "Ha ocurrido un error al registrar tu pago. Inténtalo de nuevo.",
-        variant: "destructive",
+        icon: "error",
       });
     } finally {
       setIsProcessing(false);
@@ -173,7 +172,7 @@ export function PaymentModal({ isOpen, onClose, bill }: PaymentModalProps) {
               <span className="text-sm text-muted-foreground">
                 Descripción:
               </span>
-              <span className="font-medium">{bill.description}</span>
+              <span className="font-medium">{bill.text}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">

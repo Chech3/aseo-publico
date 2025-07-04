@@ -14,7 +14,7 @@ import { ComplaintsManagement } from "@/components/admin/ComplaintsManagement";
 import { PaymentsManagement } from "@/components/admin/payments-management";
 import { AdminOverview } from "@/components/admin/admin-overview";
 import AdminRoute from "@/components/admin/AdminRoute";
-import { useToast } from "@/hooks/use-toast";
+
 import {
   getTodosLosClientesCantidad,
   getTodosLosDeudores,
@@ -23,6 +23,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import Swal from "sweetalert2";
 
 type Info = {
   cantidad: number;
@@ -31,16 +32,16 @@ export default function AdminPage() {
   const [data, setData] = useState(0);
   const [pagosHoy, setPagosHoy] = useState(0);
   const [deudores, setDeudores] = useState(0);
-  const { toast } = useToast();
+
   const { logout } = useAuth();
   const token = localStorage.getItem("adminToken");
 
   const getData = async () => {
     if (!token) {
-      toast({
-        title: "Error",
-        description: "No estás autenticado",
-        variant: "destructive",
+      Swal.fire({
+        title: "Error!",
+        icon: "error",
+        text:  "No estás autenticado."
       });
       return;
     }
@@ -50,17 +51,17 @@ export default function AdminPage() {
         setData(data?.cantidad);
       })
       .catch((error: Error) => {
-        toast({
+        Swal.fire({
           title: "Error al cargar usuarios",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
         if (error.message === "Token inválido") {
           logout();
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });
@@ -70,17 +71,17 @@ export default function AdminPage() {
         setDeudores(data?.cantidad);
       })
       .catch((error: Error) => {
-        toast({
+         Swal.fire({
           title: "Error al cargar deudores",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
         if (error.message === "Token inválido") {
           logout();
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });
@@ -89,22 +90,20 @@ export default function AdminPage() {
         setPagosHoy(data?.cantidad);
       })
       .catch((error: Error) => {
-        toast({
+         Swal.fire({
           title: "Error al cargar pagos",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
         if (error.message === "Token inválido") {
           logout();
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });
-
-    
   };
 
   const factura = async () => {

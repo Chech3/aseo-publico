@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Edit, Plus, Search } from "lucide-react";
 import { UserModal } from "@/components/admin/create-client-modal";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { getTodosLosClientes } from "@/hooks/useClientes";
 import { AddClientModal } from "@/components/admin/AddClientModal";
+import Swal from "sweetalert2";
 
 interface Client {
   id: string;
@@ -34,7 +34,6 @@ export function ClientsList() {
   const [showModal, setShowModal] = useState(false);
 
   const token = localStorage.getItem("adminToken");
-  const { toast } = useToast();
   const { logout } = useAuth();
   const [clientes, setClientes] = useState<Client[]>([]);
   const [selectedUsuario, setSelectedUsuario] = useState<Client | null>(null);
@@ -48,10 +47,10 @@ export function ClientsList() {
   const getData = async () => {
 
     if (!token) {
-      toast({
+       Swal.fire({
         title: "Error",
-        description: "No estás autenticado",
-        variant: "destructive",
+        text: "No estás autenticado",
+        icon: "error",
       });
       return;
     }
@@ -87,17 +86,17 @@ export function ClientsList() {
         setClientes(mappedClientes);
       })
       .catch((error) => {
-        toast({
+         Swal.fire({
           title: "Error al cargar clientes",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
         if (error.message === "Token inválido") {
           logout();
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });

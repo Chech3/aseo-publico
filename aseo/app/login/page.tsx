@@ -16,13 +16,12 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, Truck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -74,9 +73,10 @@ export default function LoginPage() {
         saldo: data.user.saldo,
       });
 
-      toast({
+       Swal.fire({
         title: "Inicio de sesión exitoso",
-        description: "Has iniciado sesión correctamente.",
+        text: "Has iniciado sesión correctamente.",
+        icon: "success"
       });
 
       // Guardar token o info en localStorage (dependiendo de tu API)
@@ -91,10 +91,10 @@ export default function LoginPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message || "Ocurrió un error inesperado.");
-      toast({
+       Swal.fire({
         title: "Error de autenticación",
-        description: "Cedula o contraseña incorrectos.",
-        variant: "destructive",
+        text: "Cedula o contraseña incorrectos.",
+        icon: "error",
       });
     } finally {
       setLoading(false);

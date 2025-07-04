@@ -15,15 +15,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import { Truck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 export default function RegisterPage() {
   const [errorList, setErrorList] = useState<string[]>([]);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const { login } = useAuth();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -66,9 +65,10 @@ export default function RegisterPage() {
         return;
       }
 
-      toast({
+       Swal.fire({
         title: "Registro exitoso",
-        description: "Tu cuenta ha sido creada correctamente.",
+        text: "Tu cuenta ha sido creada correctamente.",
+        icon: "success"
       });
 
       login(data.user);

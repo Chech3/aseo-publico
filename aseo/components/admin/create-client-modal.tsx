@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { actualizarUsuario } from "@/hooks/useClientes"; // aquí llamamos al hook que ya creamos
+import Swal from "sweetalert2";
 
 interface UserModalProps {
   isOpen: boolean;
@@ -37,7 +37,6 @@ interface UserModalProps {
 
 export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps) {
   const [isSaving, setIsSaving] = useState(false);
-  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -81,9 +80,10 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
 
       await actualizarUsuario(usuario._id, formData, token);
 
-      toast({
+       Swal.fire({
         title: "Usuario actualizado",
-        description: "El usuario fue actualizado correctamente",
+        text: "El usuario fue actualizado correctamente",
+        icon: "success"
       });
 
       if (getData) {
@@ -92,10 +92,10 @@ export function UserModal({ isOpen, onClose, usuario, getData }: UserModalProps)
 
       onClose();
     } catch (error: any) {
-      toast({
+       Swal.fire({
         title: "Error al actualizar",
-        description: error.message,
-        variant: "destructive",
+        text: error.message,
+        icon: "error",
       });
       console.log(error.message);
     } finally {

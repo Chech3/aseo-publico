@@ -23,12 +23,12 @@ import {
 import { Download, Search, Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getTodosLosPagos } from "@/hooks/useTodosPagos";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { actualizarPagoAdmin } from "@/hooks/useActualizarPago";
 import { ConfirmDeleteDialog } from "@/components/ConfirmDeleteDialog";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Swal from "sweetalert2";
 interface PaymentHistory {
   id: string;
   nombre?: string;
@@ -43,7 +43,6 @@ export function PaymentsManagement() {
   const [pagos, setPagos] = useState<PaymentHistory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const { toast } = useToast();
   const { logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [showModalD, setShowModalD] = useState(false);
@@ -80,8 +79,9 @@ export function PaymentsManagement() {
         const error = await respuesta.json();
         throw new Error(error.message || "Error al eliminar el pago");
       }
-      toast({
+       Swal.fire({
         title: "Eliminado con éxito",
+        icon: "error"
       });
       getData();
       // Aquí puedes actualizar la tabla si estás usando useState, etc.
@@ -179,10 +179,10 @@ export function PaymentsManagement() {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
-      toast({
+       Swal.fire({
         title: "Error",
-        description: "No estás autenticado",
-        variant: "destructive",
+        text: "No estás autenticado",
+        icon: "error",
       });
       return;
     }
@@ -213,17 +213,17 @@ export function PaymentsManagement() {
         setPagos(mappedPagos);
       })
       .catch((error) => {
-        toast({
+         Swal.fire({
           title: "Error al cargar pagos",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
         if (error.message === "Token inválido") {
           logout();
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });
@@ -244,10 +244,10 @@ export function PaymentsManagement() {
 
     const token = localStorage.getItem("adminToken");
     if (!token) {
-      toast({
+       Swal.fire({
         title: "Error",
-        description: "No estás autenticado",
-        variant: "destructive",
+        text: "No estás autenticado",
+        icon: "error",
       });
       return;
     }
@@ -259,21 +259,21 @@ export function PaymentsManagement() {
         estado: selectedPayment.estado,
       });
 
-      toast({
+       Swal.fire({
         title: "Pago actualizado",
-        description: "Se guardaron los cambios",
+        text: "Se guardaron los cambios",
       });
 
       setShowModal(false);
       // Aquí podrías refrescar la tabla después
     } catch (error) {
-      toast({
+       Swal.fire({
         title: "Error al actualizar",
-        description:
+        text:
           typeof error === "object" && error !== null && "message" in error
             ? (error as { message?: string }).message
             : "Error inesperado",
-        variant: "destructive",
+        icon: "error",
       });
     } finally {
       getData();

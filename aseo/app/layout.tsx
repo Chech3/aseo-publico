@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "../context/AuthContext";
 
 const geistSans = localFont({
@@ -33,7 +32,6 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <main>{children}</main>
-          <Toaster></Toaster>
         </body>
       </AuthProvider>
     </html>

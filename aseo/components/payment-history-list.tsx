@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { getUltimosPagos } from "@/hooks/useUltimosPagos";
-import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 interface PaymentHistory {
   id: string;
@@ -24,16 +24,15 @@ interface PaymentHistory {
 
 export function PaymentHistoryList() {
   const [pagos, setPagos] = useState<PaymentHistory[]>([]);
-  const { toast } = useToast();
   const { logout } = useAuth();
-  const getStatusColor = (estado: PaymentHistory["estado"]): "default" | "destructive" | "outline" | "secondary" => {
+  const getStatusColor = (estado: PaymentHistory["estado"]): "default" | "error" | "outline" | "secondary" => {
     switch (estado) {
       case "completado":
         return "secondary";
       case "pendiente":
         return "outline";
       case "rechazado":
-        return "destructive";
+        return "error";
       default:
         return "default";
     }
@@ -72,10 +71,10 @@ export function PaymentHistoryList() {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
-      toast({
+       Swal.fire({
         title: "Error",
-        description: "No estás autenticado",
-        variant: "destructive",
+        text: "No estás autenticado",
+        icon: "error",
       });
       return;
     }
@@ -104,21 +103,21 @@ export function PaymentHistoryList() {
         setPagos(mappedPagos);
       })
       .catch((error) => {
-        toast({
+         Swal.fire({
           title: "Error al cargar pagos",
-          description: error.message,
-          variant: "destructive",
+          text: error.message,
+          icon: "error",
         });
          if (error.message === "Token inválido") {
           logout(); 
-          toast({
+           Swal.fire({
             title: "Sesión expirada",
-            description: "Por favor, inicia sesión nuevamente.",
-            variant: "destructive",
+            text: "Por favor, inicia sesión nuevamente.",
+            icon: "error",
           });
         }
       });
-  }, [logout, toast]);
+  }, [logout]);
 
   return (
     <div className="rounded-md border">

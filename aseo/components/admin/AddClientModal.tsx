@@ -17,7 +17,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import Swal from "sweetalert2";
 
 interface AddClientModalProps {
   open: boolean;
@@ -46,7 +46,6 @@ export function AddClientModal({
   const [errorList, setErrorList] = useState<string[]>([]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  const { toast } = useToast();
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -71,9 +70,10 @@ export function AddClientModal({
         }
         return;
       } else {
-        toast({
+         Swal.fire({
           title: "Registro exitoso",
-          description: "La cuenta ha sido creada correctamente.",
+          text: "La cuenta ha sido creada correctamente.",
+          icon: "success"
         });
         onSuccess?.();
         onClose();
@@ -81,8 +81,9 @@ export function AddClientModal({
       }
     } catch (error) {
       console.error(error);
-      toast({
+       Swal.fire({
         title: "Error al registrar",
+        icon: "error"
       });
     } finally {
       setLoading(false);

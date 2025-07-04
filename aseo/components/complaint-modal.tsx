@@ -22,9 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Upload, ImageIcon, FileText } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 interface ComplaintModalProps {
   isOpen: boolean;
@@ -41,7 +41,6 @@ export function ComplaintModal({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [uploadedFile, setUploadedFile] = useState<any | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const { user } = useAuth();
   const getModalTitle = () => {
     switch (complaintType) {
@@ -70,10 +69,10 @@ export function ComplaintModal({
     if (file) {
       // Validar tamaño del archivo (5MB máximo)
       if (file.size > 5 * 1024 * 1024) {
-        toast({
+         Swal.fire({
           title: "Archivo muy grande",
-          description: "El archivo debe ser menor a 5MB.",
-          variant: "destructive",
+          text: "El archivo debe ser menor a 5MB.",
+          icon: "error",
         });
         return;
       }
@@ -86,10 +85,10 @@ export function ComplaintModal({
         "image/webp",
       ];
       if (!allowedTypes.includes(file.type)) {
-        toast({
+         Swal.fire({
           title: "Tipo de archivo no válido",
-          description: "Solo se permiten archivos PNG, JPG, JPEG y WEBP.",
-          variant: "destructive",
+          text: "Solo se permiten archivos PNG, JPG, JPEG y WEBP.",
+          icon: "success",
         });
         return;
       }
@@ -113,10 +112,10 @@ export function ComplaintModal({
     const descripcion = formData.get("descripcion") as string;
 
     if (!tipoQueja || !descripcion) {
-      toast({
+       Swal.fire({
         title: "Campos requeridos",
-        description: "Por favor completa todos los campos marcados con *.",
-        variant: "destructive",
+        text: "Por favor completa todos los campos marcados con *.",
+        icon: "error",
       });
       setIsSubmitting(false);
       return;
@@ -144,19 +143,19 @@ export function ComplaintModal({
         body: formPayload,
       });
 
-      toast({
+       Swal.fire({
         title: "Queja registrada exitosamente",
-        description:
+        text:
           "Hemos recibido tu queja. Te contactaremos pronto para darle seguimiento.",
       });
 
       onClose();
     } catch {
-      toast({
+       Swal.fire({
         title: "Error al registrar la queja",
-        description:
+        text:
           "Ha ocurrido un error al registrar tu queja. Inténtalo de nuevo.",
-        variant: "destructive",
+        icon: "error",
       });
     } finally {
       setIsSubmitting(false);
