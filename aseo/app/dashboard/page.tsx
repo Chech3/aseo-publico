@@ -153,7 +153,6 @@ export default function DashboardPage() {
                   <p className="text-base font-semibold text-gray-800">
                     {user?.nombre}
                   </p>
-                  {/* <p className="text-sm text-gray-500">ID: ASE-12345</p> */}
                 </div>
 
                 {/* Dirección */}
