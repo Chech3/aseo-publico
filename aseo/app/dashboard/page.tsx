@@ -24,8 +24,8 @@ export default function DashboardPage() {
   const [isComplaintModalOpen, setIsComplaintModalOpen] = useState(false);
   const [complaintType, setComplaintType] = useState<any>("");
   const [estadoCuenta, setEstadoCuenta] = useState<EstadoCuenta | null>(null);
-  const [mensaje,setMensaje] = useState<any>("");
-  const [deuda,setDeuda] = useState<any>("");
+  const [mensaje, setMensaje] = useState<any>("");
+  const [deuda, setDeuda] = useState<any>("");
 
   type EstadoCuenta = {
     deudaActual: number;
@@ -133,29 +133,53 @@ export default function DashboardPage() {
           </div>
 
           {/* Sección de estado de cuenta */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Estado de tu cuenta</CardTitle>
-              <CardDescription>Resumen de tu servicio de aseo</CardDescription>
+          <Card className="shadow-md rounded-2xl border border-gray-200">
+            <CardHeader className="bg-green-50 rounded-t-2xl px-6 py-4">
+              <CardTitle className="text-lg font-bold text-green-800">
+                Estado de tu cuenta
+              </CardTitle>
+              <CardDescription className="text-sm text-green-700">
+                Resumen de tu servicio de aseo
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+
+            <CardContent className="px-6 py-5">
               <div className="grid gap-6 md:grid-cols-3">
-                <div className="flex flex-col space-y-1">
-                  <span className="text-sm text-muted-foreground">Cliente</span>
-                  <span className="font-medium">{user?.nombre}</span>
-                  {/* <span className="text-sm">ID: ASE-12345</span> */}
+                {/* Cliente */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Cliente
+                  </p>
+                  <p className="text-base font-semibold text-gray-800">
+                    {user?.nombre}
+                  </p>
+                  {/* <p className="text-sm text-gray-500">ID: ASE-12345</p> */}
                 </div>
-                <div className="flex flex-col space-y-1">
-                  <span className="text-sm text-muted-foreground">
+
+                {/* Dirección */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
                     Dirección de servicio
-                  </span>
-                  <span className="font-medium">{user?.direccion}</span>
-                  <span className="text-sm">Falcón, Venezuela</span>
+                  </p>
+                  <p className="text-base font-semibold text-gray-800">
+                    {user?.direccion}
+                  </p>
+                  <p className="text-sm text-gray-500">Falcón, Venezuela</p>
                 </div>
-                <div className="flex flex-col space-y1">
-                  <span>Razón de Deuda</span>
-                  <span className="font-medium">{deuda === 0 && "0" ? "No posee deuda" : mensaje}</span>
-                  {/* <span className="text-sm">{meses}</span> */}
+
+                {/* Deuda */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Razón de Deuda
+                  </p>
+                  <p
+                    className={`text-base font-semibold ${
+                      deuda === 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {deuda === 0 ? "No posee deuda" : mensaje}
+                  </p>
+                  {/* <p className="text-sm text-gray-500">{meses}</p> */}
                 </div>
               </div>
             </CardContent>
