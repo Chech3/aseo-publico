@@ -18,6 +18,7 @@ import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ComplaintModal } from "@/components/complaint-modal";
 import PaymentInfo from "@/components/payment-info-card";
+import { getDolar } from "@/hooks/valorDolar";
 export default function DashboardPage() {
   const { user } = useAuth();
 
@@ -26,7 +27,7 @@ export default function DashboardPage() {
   const [estadoCuenta, setEstadoCuenta] = useState<EstadoCuenta | null>(null);
   const [mensaje, setMensaje] = useState<any>("");
   const [deuda, setDeuda] = useState<any>("");
-
+  const [valorDolar, setValorDolar] = useState<number | string>();
   type EstadoCuenta = {
     deudaActual: number;
     saldoRestante: number;
@@ -42,6 +43,14 @@ export default function DashboardPage() {
   const getData = async () => {
     const token = localStorage.getItem("adminToken");
 
+    getDolar()
+      .then((data: any) => {
+        setValorDolar(data?.dolar_bcv + "bs");
+      })
+      .catch((error: Error) => {
+        console.log(error.message);
+        setValorDolar("error al cargar la informacion")
+      });
     if (!token) {
       console.error("No hay token de autenticación");
       return;
@@ -89,6 +98,15 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-bold tracking-tight">Bienvenido </h1>
             <p className="text-muted-foreground">
               Gestiona tus pagos de servicio de aseo de forma rápida y segura.
+            </p>
+          </div>
+          <div>
+            <p>
+              Tasa del dia de hoy:
+              <span className="font-bold ">
+                {" "}
+                {""} {valorDolar}
+              </span>
             </p>
           </div>
 

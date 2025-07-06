@@ -6,6 +6,8 @@ const authRoutes = require('./routes/auth');
 const pagosRoutes = require('./routes/pagos');
 const quejasRoutes = require('./routes/queja');
 const seedAdmin = require('./utils/seedAdmin');
+const dolarRoutes = require('./routes/dolar');
+
 const path = require("path");
 dotenv.config();
 
@@ -33,6 +35,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/pagos', pagosRoutes);
 app.use('/api/quejas', quejasRoutes);
+app.use('/api/dolar', dolarRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
