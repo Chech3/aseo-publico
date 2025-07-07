@@ -49,7 +49,7 @@ export default function DashboardPage() {
       })
       .catch((error: Error) => {
         console.log(error.message);
-        setValorDolar("error al cargar la informacion")
+        setValorDolar("error al cargar la informacion");
       });
     if (!token) {
       console.error("No hay token de autenticación");
@@ -100,13 +100,15 @@ export default function DashboardPage() {
               Gestiona tus pagos de servicio de aseo de forma rápida y segura.
             </p>
           </div>
-          <div>
-            <p>
-              Tasa del dia de hoy:
-              <span className="font-bold ">
-                {" "}
-                {""} {valorDolar}
+          <div className="bg-white p-4 rounded-lg shadow">
+            <p className="text-gray-600 text-sm font-medium">Tasa del día</p>
+            <div className="flex items-baseline mt-1">
+              <span className="text-gray-900 text-2xl font-bold">
+                {valorDolar || "---"}
               </span>
+            </div>
+            <p className="text-gray-400 text-xs mt-1">
+              Actualizado: {new Date().toLocaleDateString()}
             </p>
           </div>
 
